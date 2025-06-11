@@ -1,3 +1,4 @@
+# use this script to process, merge, and move UMB reports to the AP Input Folder 
 from pathlib import Path
 import os
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
@@ -5,17 +6,19 @@ import fitz  # PyMuPDF
 import shutil 
 
 # Define folders
-
+# test folder 
+# input_folder = Path("C:/Users/nflores/Desktop/temp")
+# processed_folder = Path("C:/Users/nflores/Desktop/temp/processed")
 # local folders 
-# input_folder = Path("C:/Users/nflores/Desktop/pdfs-to-merge")
+input_folder = Path("C:/Users/nflores/Desktop/pdfs-to-merge")
 output_folder = Path("C:/Users/nflores/Desktop/merged-pdfs")
 # ap folders 
 # input_folder  
-input_folder = Path("C:/Users/nflores/OneDrive - Manko Window Systems, Inc/credit_card_reports")
-ap_input_folder = Path("//mws-doclink/SmartCapture/Input Folders/AP Invoice CREDIT CARD")
-
-
+# input_folder = Path("C:/Users/nflores/OneDrive - Manko Window Systems, Inc/credit_card_reports")
 processed_folder = Path("C:/Users/nflores/Desktop/pdfs-to-merge/processed")
+
+
+ap_input_folder = Path("//mws-doclink/SmartCapture/Input Folders/AP Invoice CREDIT CARD")
 output_folder.mkdir(exist_ok=True)
 processed_folder.mkdir(exist_ok=True)
 
@@ -149,9 +152,9 @@ def process_transactions(pdf_path):
 def has_all_required_files(name, folder):
     """Checks if all required files for a cardholder exist."""
     required_files = [
-        folder / f"{name}_statement.pdf",
-        folder / f"{name}_expense.pdf",
-        folder / f"{name}_transactions.pdf"
+        folder / f"{name}_st.pdf",
+        folder / f"{name}_exp.pdf",
+        folder / f"{name}_code.pdf"
     ]
     for file in required_files:
         if not file.exists():
@@ -172,17 +175,17 @@ def process_pdfs():
             continue
 
         files_to_merge = [
-            input_folder / f"{name}_statement.pdf",
-            input_folder / f"{name}_expense.pdf",
-            input_folder / f"{name}_transactions.pdf"
+            input_folder / f"{name}_st.pdf",
+            input_folder / f"{name}_exp.pdf",
+            input_folder / f"{name}_code.pdf"
         ]
         
         # cleaned_files = [remove_blank_pages(f) for f in files_to_merge if f.exists()]
         
         cleaned_files = [
-            process_statement(input_folder / f"{name}_statement.pdf"),
-            process_expense(input_folder / f"{name}_expense.pdf"),
-            process_transactions(input_folder / f"{name}_transactions.pdf")
+            process_statement(input_folder / f"{name}_st.pdf"),
+            process_expense(input_folder / f"{name}_exp.pdf"),
+            process_transactions(input_folder / f"{name}_code.pdf")
         ]
 
         merger = PdfMerger()
@@ -196,54 +199,14 @@ def process_pdfs():
         for f in cleaned_files:
             os.remove(f)
 
-        # move_to_processed(files_to_merge)
+        move_to_processed(files_to_merge)
         print(f"Processed and merged reports for {name}.")
 
 def main():
     process_pdfs()
-    move_to_ap_input_folder()
+    # move_to_ap_input_folder()
 
 if __name__ == "__main__":
     main() 
     print("All reports merged and moved to AP Input Folder.") 
 
-"""
-Moved altenhofen_report.pdf to AP Input Folder.
-Moved bahner_report.pdf to AP Input Folder.
-Moved beckman_report.pdf to AP Input Folder.
-Moved beyer_report.pdf to AP Input Folder.
-Moved bjones_report.pdf to AP Input Folder.
-Moved burgess_report.pdf to AP Input Folder.
-Moved campbell_report.pdf to AP Input Folder.
-Moved cox_report.pdf to AP Input Folder.
-Moved dix_report.pdf to AP Input Folder.
-Moved ernst_report.pdf to AP Input Folder.
-Moved frisbie_report.pdf to AP Input Folder.
-Moved gehrer_report.pdf to AP Input Folder.
-Moved gjones_report.pdf to AP Input Folder.
-Moved hotel1_report.pdf to AP Input Folder.
-Moved hotel3_report.pdf to AP Input Folder.
-Moved howell_report.pdf to AP Input Folder.
-Moved jenjones_report.pdf to AP Input Folder.
-Moved jepsen_report.pdf to AP Input Folder.
-Moved jerjones_report.pdf to AP Input Folder.
-Moved kleinkauf_report.pdf to AP Input Folder.
-Moved leuszler_report.pdf to AP Input Folder.
-Moved lill_report.pdf to AP Input Folder.
-Moved long_report.pdf to AP Input Folder.
-Moved marts_report.pdf to AP Input Folder.
-Moved mcguire_report.pdf to AP Input Folder.
-Moved mhkpurchasing_report.pdf to AP Input Folder.
-Moved modean_report.pdf to AP Input Folder.
-Moved newman_report.pdf to AP Input Folder.
-Moved ott_report.pdf to AP Input Folder.
-Moved padgett_report.pdf to AP Input Folder.
-Moved plummer_report.pdf to AP Input Folder.
-Moved sjones_report.pdf to AP Input Folder.
-Moved spiller_report.pdf to AP Input Folder.
-Moved tesene_report.pdf to AP Input Folder.
-Moved titterton_report.pdf to AP Input Folder.
-Moved welty_report.pdf to AP Input Folder.
-Moved wilkinson_report.pdf to AP Input Folder.
-Moved yoder_report.pdf to AP Input Folder.
-"""
