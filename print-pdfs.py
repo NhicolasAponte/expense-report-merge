@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+# for this script to work, the default pdf viewer needs to be adobe or foxit 
 def print_all_files(directory):
     directory = Path(directory)
     for file in directory.iterdir():

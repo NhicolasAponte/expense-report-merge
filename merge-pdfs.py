@@ -8,7 +8,7 @@ import shutil
 # local input: C:\Users\nflores\Desktop\pdfs-to-merge
 # local output: C:\Users\nflores\Desktop\merged-pdfs
 input_folder = Path("C:/Users/nflores/Desktop/pdfs-to-merge")
-output_folder = Path("C:/Users/nflores/Desktop/merged-pdfs")
+output_folder = Path("C:/Users/nflores/Desktop/pdfs-to-merge/merged-pdfs")
 processed_folder = Path("C:/Users/nflores/Desktop/pdfs-to-merge/processed")
 output_folder.mkdir(exist_ok=True)
 processed_folder.mkdir(exist_ok=True)
