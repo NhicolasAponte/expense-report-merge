@@ -19,7 +19,8 @@ def main():
     for filename in os.listdir(INPUT_DIR):
         if filename.lower().endswith(".pdf"):
             input_pdf = os.path.join(INPUT_DIR, filename)
-            output_pdf = os.path.join(OUTPUT_DIR, filename)
+            name, ext = os.path.splitext(filename)
+            output_pdf = os.path.join(OUTPUT_DIR, f"{name}_flipped{ext}")
             print(f"Flipping: {filename}")
             flip_pdf_pages(input_pdf, output_pdf)
     print("Done flipping all PDFs.")
