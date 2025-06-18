@@ -70,8 +70,8 @@ def split_invoices(pdf_path, output_dir):
             page_text = page.extract_text() or ""
             first_line = page_text.strip().split('\n')[0] if page_text.strip() else ""
             invoice_number = get_invoice_number_from_line(first_line)
-            if invoice_number != current_invoice:
-                # Save the previous invoice PDF if exists
+            # If a new invoice number is found, save the previous invoice PDF
+            if invoice_number != "Not found" and invoice_number != current_invoice:
                 if current_writer and current_invoice and page_indices:
                     output_path = os.path.join(
                         output_dir,
@@ -83,8 +83,13 @@ def split_invoices(pdf_path, output_dir):
                 current_writer = PdfWriter()
                 current_invoice = invoice_number
                 page_indices = []
-            current_writer.add_page(page)
-            page_indices.append(i)
+            # If no invoice number is found, treat as attachment for current invoice
+            if current_writer is None and invoice_number == "Not found":
+                # If the first page(s) are attachments with no invoice number, skip until we find an invoice number
+                continue
+            if current_writer is not None:
+                current_writer.add_page(page)
+                page_indices.append(i)
         # Save the last invoice PDF
         if current_writer and current_invoice and page_indices:
             output_path = os.path.join(
@@ -96,6 +101,7 @@ def split_invoices(pdf_path, output_dir):
         print(f"Split invoices for {os.path.basename(pdf_path)} saved to {output_dir}")
     except Exception as e:
         print(f"Error splitting {pdf_path}: {e}")
+
 
 if __name__ == "__main__":
     pdf_files = list_pdfs(INPUT_DIR)
