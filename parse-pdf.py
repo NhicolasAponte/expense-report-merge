@@ -1,10 +1,12 @@
 import os
 import re
+import csv
 from PyPDF2 import PdfReader, PdfWriter
 
 # --- Hard-coded global variables for input and output directories ---
 INPUT_DIR = r"C:\Users\nflores\Desktop\temp"
 OUTPUT_DIR = os.path.join(INPUT_DIR, "ready-for-invoicing")
+INVOICE_LIST = []
 
 def list_pdfs(directory):
     return [file for file in os.listdir(directory) if file.lower().endswith('.pdf')]
@@ -40,7 +42,21 @@ def get_invoice_number_from_line(line):
             match_digits = re.search(r'#\s*(\d{6})', line)
             if match_digits:
                 invoice_number = match_digits.group(1)
-    return invoice_number
+    if invoice_number != "Not found" and invoice_number not in INVOICE_LIST:
+        INVOICE_LIST.append(invoice_number)
+
+    return invoice_number 
+
+def write_csv_to_ready_for_invoicing(data, filename="cleaned_invoices.csv"):
+    # Get the path to the user's Desktop/ready-for-invoicing
+    desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+    target_dir = os.path.join(desktop_path, "ready-for-invoicing")
+    os.makedirs(target_dir, exist_ok=True)  # Create the directory if it doesn't exist
+    output_path = os.path.join(target_dir, filename)
+    with open(output_path, "w", newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(data)
+    print(f"Cleaned invoice list exported to {output_path}")
 
 def split_invoices(pdf_path, output_dir):
     try:
@@ -87,3 +103,5 @@ if __name__ == "__main__":
         pdf_path = os.path.join(INPUT_DIR, pdf_file)
         print()
         split_invoices(pdf_path, OUTPUT_DIR)
+    write_csv_to_ready_for_invoicing(INVOICE_LIST)
+    print(f"Total unique invoice numbers extracted: {len(INVOICE_LIST)}")
