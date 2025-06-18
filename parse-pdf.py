@@ -1,7 +1,10 @@
 import os
-import sys
 import re
 from PyPDF2 import PdfReader, PdfWriter
+
+# --- Hard-coded global variables for input and output directories ---
+INPUT_DIR = r"C:\Users\nflores\Desktop\temp"
+OUTPUT_DIR = os.path.join(INPUT_DIR, "ready-for-invoicing")
 
 def list_pdfs(directory):
     return [file for file in os.listdir(directory) if file.lower().endswith('.pdf')]
@@ -79,14 +82,8 @@ def split_invoices(pdf_path, output_dir):
         print(f"Error splitting {pdf_path}: {e}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python parse-pdf.py <directory>")
-        sys.exit(1)
-    directory = sys.argv[1]
-    pdf_files = list_pdfs(directory)
+    pdf_files = list_pdfs(INPUT_DIR)
     for pdf_file in pdf_files:
-        pdf_path = os.path.join(directory, pdf_file)
-        # print(f"--- {pdf_file} ---")
+        pdf_path = os.path.join(INPUT_DIR, pdf_file)
         print()
-        # Call split_invoices for each file
-        split_invoices(pdf_path, os.path.join(directory, "split-invoices"))
+        split_invoices(pdf_path, OUTPUT_DIR)
