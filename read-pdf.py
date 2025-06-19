@@ -1,9 +1,10 @@
 import os
 from PyPDF2 import PdfReader
 import ocrmypdf
+from config import LOCAL_INPUT_DIR, LOCAL_OUTPUT_DIR
 
-INPUT_DIR = r"C:\Users\nflores\Desktop\temp"  # Change as needed
-OUTPUT_DIR = os.path.join(INPUT_DIR, "ocr-pdfs")
+INPUT_DIR = LOCAL_INPUT_DIR
+OUTPUT_DIR = LOCAL_OUTPUT_DIR
 
 def read_pdf(pdf_path):
     reader = PdfReader(pdf_path)
@@ -35,7 +36,7 @@ def main():
             pdf_path = os.path.join(INPUT_DIR, filename)
             print("READING ORIGINAL PDF")
             read_pdf(pdf_path)
-            ocr_pdf(pdf_path)
+            # ocr_pdf(pdf_path)
     # for filename in os.listdir(OUTPUT_DIR):
     #     if filename.lower().endswith(".pdf"):
     #         print("READING OCR PDF")
