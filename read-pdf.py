@@ -1,9 +1,9 @@
 import os
 from PyPDF2 import PdfReader
-from datetime import datetime
 from config import LOCAL_DESKTOP_TEMP
 
 INPUT_DIR = LOCAL_DESKTOP_TEMP
+# INPUT_DIR = r"C:\Users\nflores\Desktop\temp\ready-for-invoicing\0620_1313"
 
 def read_pdf(pdf_path):
     reader = PdfReader(pdf_path)
@@ -11,9 +11,11 @@ def read_pdf(pdf_path):
     print(f"File: {os.path.basename(pdf_path)}")
     print(f"Total pages: {num_pages}")
     for i, page in enumerate(reader.pages, start=1):
-        print(f"\n--- Page {i} ---")
         text = page.extract_text() or ""
-        print(text.strip())
+        if text == "":
+            print(f"\n--- Page {i} ---")
+            print("No text found on this page.")
+        # print(text.strip())
 
 def main():
     for filename in os.listdir(INPUT_DIR):
