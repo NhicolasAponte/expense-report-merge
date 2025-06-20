@@ -20,21 +20,36 @@ def get_timestamped_subdir(base_dir):
     os.makedirs(subdir_path, exist_ok=True)
     return subdir_path
 
-def get_invoice_number_from_line(line):
-    
+def get_invoice_number_from_page(page_text):
     invoice_number = NOT_FOUND
-    match = re.search(r'#\s*[mM](.{6})', line)
+    # Try to find invoice number in the first line
+    first_line = page_text.strip().split('\n')[0] if page_text.strip() else ""
+    match = re.search(r'#\s*[mM](.{6})', first_line)
     if match:
         invoice_number = match.group(1).strip()
     else:
-        first_line_lower = line.lower()
+        first_line_lower = first_line.lower()
         match_alt = re.search(r'm(\d{6})', first_line_lower)
         if match_alt:
             invoice_number = match_alt.group(1)
         else:
-            match_digits = re.search(r'#\s*(\d{6})', line)
+            match_digits = re.search(r'#\s*(\d{6})', first_line)
             if match_digits:
                 invoice_number = match_digits.group(1)
+    # If not found in first line, search the whole page
+    if invoice_number == NOT_FOUND:
+        match = re.search(r'#\s*[mM](.{6})', page_text)
+        if match:
+            invoice_number = match.group(1).strip()
+        else:
+            page_text_lower = page_text.lower()
+            match_alt = re.search(r'm(\d{6})', page_text_lower)
+            if match_alt:
+                invoice_number = match_alt.group(1)
+            else:
+                match_digits = re.search(r'#\s*(\d{6})', page_text)
+                if match_digits:
+                    invoice_number = match_digits.group(1)
     if invoice_number != NOT_FOUND and invoice_number not in INVOICE_LIST:
         INVOICE_LIST.append(invoice_number)
     return invoice_number 
@@ -47,10 +62,8 @@ def split_pdf_by_page(pdf_path, output_dir):
             print(f"No pages found in {pdf_path}. Skipping.")
             return
         for i, page in enumerate(reader.pages, start=1):
-            
             page_text = page.extract_text() or ""
-            first_line = page_text.strip().split('\n')[0] if page_text.strip() else ""
-            invoice_number = get_invoice_number_from_line(first_line)
+            invoice_number = get_invoice_number_from_page(page_text)
             file_name = ""
             if invoice_number == NOT_FOUND:
                 file_name = f"page_{i:03d}_no_invoice.pdf"
