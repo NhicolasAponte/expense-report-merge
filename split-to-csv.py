@@ -54,6 +54,18 @@ def get_invoice_number_from_page(page_text):
         INVOICE_LIST.append(invoice_number)
     return invoice_number
 
+def get_unique_filename(output_dir, base_filename):
+    """
+    Returns a unique file path in output_dir by appending _2, _3, etc. if needed.
+    """
+    name, ext = os.path.splitext(base_filename)
+    candidate = base_filename
+    counter = 2
+    while os.path.exists(os.path.join(output_dir, candidate)):
+        candidate = f"{name}_{counter}{ext}"
+        counter += 1
+    return candidate
+
 def split_invoices(pdf_path, output_dir):
     try:
         reader = PdfReader(pdf_path)
@@ -67,10 +79,10 @@ def split_invoices(pdf_path, output_dir):
             invoice_number = get_invoice_number_from_page(page_text)
             if invoice_number != NOT_FOUND and invoice_number != current_invoice:
                 if current_writer and current_invoice and page_indices:
-                    output_path = os.path.join(
-                        output_dir,
-                        f"{current_invoice}.pdf"
-                    )
+                    # Use get_unique_filename to avoid overwriting
+                    base_filename = f"{current_invoice}.pdf"
+                    unique_filename = get_unique_filename(output_dir, base_filename)
+                    output_path = os.path.join(output_dir, unique_filename)
                     with open(output_path, "wb") as out_f:
                         current_writer.write(out_f)
                 current_writer = PdfWriter()
@@ -82,10 +94,9 @@ def split_invoices(pdf_path, output_dir):
                 current_writer.add_page(page)
                 page_indices.append(i)
         if current_writer and current_invoice and page_indices:
-            output_path = os.path.join(
-                output_dir,
-                f"{current_invoice}.pdf"
-            )
+            base_filename = f"{current_invoice}.pdf"
+            unique_filename = get_unique_filename(output_dir, base_filename)
+            output_path = os.path.join(output_dir, unique_filename)
             with open(output_path, "wb") as out_f:
                 current_writer.write(out_f)
         print(f"Split invoices for {os.path.basename(pdf_path)} saved to {output_dir}")
