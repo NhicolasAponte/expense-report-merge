@@ -52,7 +52,19 @@ def get_invoice_number_from_page(page_text):
                     invoice_number = match_digits.group(1)
     if invoice_number != NOT_FOUND and invoice_number not in INVOICE_LIST:
         INVOICE_LIST.append(invoice_number)
-    return invoice_number 
+    return invoice_number
+
+def get_unique_filename(output_dir, base_filename):
+    """
+    Returns a unique file path in output_dir by appending _2, _3, etc. if needed.
+    """
+    name, ext = os.path.splitext(base_filename)
+    candidate = base_filename
+    counter = 2
+    while os.path.exists(os.path.join(output_dir, candidate)):
+        candidate = f"{name}_{counter}{ext}"
+        counter += 1
+    return candidate
 
 def split_pdf_by_page(pdf_path, output_dir):
     try: 
@@ -64,11 +76,11 @@ def split_pdf_by_page(pdf_path, output_dir):
         for i, page in enumerate(reader.pages, start=1):
             page_text = page.extract_text() or ""
             invoice_number = get_invoice_number_from_page(page_text)
-            file_name = ""
             if invoice_number == NOT_FOUND:
-                file_name = f"page_{i:03d}_no_invoice.pdf"
+                base_file_name = f"{i:03d}_no_invoice.pdf"
             else:
-                file_name = f"{invoice_number}.pdf"
+                base_file_name = f"{invoice_number}.pdf"
+            file_name = get_unique_filename(output_dir, base_file_name)
             output_path = os.path.join(output_dir, file_name)
             writer = PdfWriter()
             writer.add_page(page)
