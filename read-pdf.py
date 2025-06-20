@@ -1,10 +1,9 @@
 import os
 from PyPDF2 import PdfReader
-import ocrmypdf
-from config import LOCAL_INPUT_DIR, LOCAL_OUTPUT_DIR
+from datetime import datetime
+from config import LOCAL_DESKTOP_TEMP
 
-INPUT_DIR = LOCAL_INPUT_DIR
-OUTPUT_DIR = LOCAL_OUTPUT_DIR
+INPUT_DIR = LOCAL_DESKTOP_TEMP
 
 def read_pdf(pdf_path):
     reader = PdfReader(pdf_path)
@@ -16,32 +15,13 @@ def read_pdf(pdf_path):
         text = page.extract_text() or ""
         print(text.strip())
 
-def ocr_pdf(pdf_path):
-    "APPLYING OCR TO PDF" 
-    ocrmypdf.ocr(
-        pdf_path,
-        os.path.join(OUTPUT_DIR, os.path.basename(pdf_path)),
-        rotate_pages=True,
-        deskew=True,
-        progress_bar=True,
-        # force_ocr=True,
-        # skip_text=True
-    )
-
 def main():
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
     for filename in os.listdir(INPUT_DIR):
         if filename.lower().endswith(".pdf"):
             pdf_path = os.path.join(INPUT_DIR, filename)
             print("READING ORIGINAL PDF")
             read_pdf(pdf_path)
-            # ocr_pdf(pdf_path)
-    # for filename in os.listdir(OUTPUT_DIR):
-    #     if filename.lower().endswith(".pdf"):
-    #         print("READING OCR PDF")
-    #         pdf_path = os.path.join(OUTPUT_DIR, filename)
-    #         read_pdf(pdf_path)
+            
 
 if __name__ == "__main__":
     main()
