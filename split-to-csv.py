@@ -3,9 +3,10 @@ import re
 import csv
 from datetime import datetime
 from PyPDF2 import PdfReader, PdfWriter
+from config import LOCAL_DESKTOP_TEMP
 
 # --- Hard-coded global variables for input and output directories ---
-INPUT_DIR = r"C:\Users\nflores\Desktop\temp"
+INPUT_DIR = LOCAL_DESKTOP_TEMP
 OUTPUT_DIR = os.path.join(INPUT_DIR, "ready-for-invoicing")
 INVOICE_LIST = []
 

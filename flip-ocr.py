@@ -3,10 +3,10 @@ from io import BytesIO
 from datetime import datetime
 from PyPDF2 import PdfReader, PdfWriter
 import ocrmypdf
-from config import LOCAL_INPUT_DIR, LOCAL_OUTPUT_DIR
+from config import LOCAL_DESKTOP_TEMP
 
-INPUT_DIR = LOCAL_INPUT_DIR
-OUTPUT_DIR = LOCAL_OUTPUT_DIR
+INPUT_DIR = LOCAL_DESKTOP_TEMP
+OUTPUT_DIR = LOCAL_DESKTOP_TEMP
 
 def get_new_filename(original_name, suffix="_ocr"):
     name, ext = os.path.splitext(original_name)
