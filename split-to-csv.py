@@ -77,10 +77,11 @@ def split_invoices(pdf_path, output_dir):
         for i, page in enumerate(reader.pages):
             page_text = page.extract_text() or ""
             invoice_number = get_invoice_number_from_page(page_text)
+            # case where invoice number is found and is different from the current one 
             if invoice_number != NOT_FOUND and invoice_number != current_invoice:
                 if current_writer and current_invoice and page_indices:
                     # Use get_unique_filename to avoid overwriting
-                    base_filename = f"{current_invoice}.pdf"
+                    base_filename = f"{page_indices[0] + 1}_{current_invoice}.pdf"
                     unique_filename = get_unique_filename(output_dir, base_filename)
                     output_path = os.path.join(output_dir, unique_filename)
                     with open(output_path, "wb") as out_f:
@@ -88,13 +89,15 @@ def split_invoices(pdf_path, output_dir):
                 current_writer = PdfWriter()
                 current_invoice = invoice_number
                 page_indices = []
+            # If no invoice number is found, continue to the next page 
             if current_writer is None and invoice_number == NOT_FOUND:
+                # FINISH IMPLEMENTATION 
                 continue
             if current_writer is not None:
                 current_writer.add_page(page)
                 page_indices.append(i)
         if current_writer and current_invoice and page_indices:
-            base_filename = f"{current_invoice}.pdf"
+            base_filename = f"{page_indices[0] + 1}_{current_invoice}.pdf"
             unique_filename = get_unique_filename(output_dir, base_filename)
             output_path = os.path.join(output_dir, unique_filename)
             with open(output_path, "wb") as out_f:
@@ -119,6 +122,20 @@ def write_csv_to_ready_for_invoicing(data, filename=None):
         writer.writerow(data)
     print(f"Cleaned invoice list exported to {output_path}")
 
+def move_original_to_output(pdf_path, output_dir):
+    """
+    Moves the original PDF to the output directory.
+    """
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    base_filename = os.path.basename(pdf_path)
+    output_path = os.path.join(output_dir, base_filename)
+    if not os.path.exists(output_path):
+        os.rename(pdf_path, output_path)
+        print(f"Moved original PDF {base_filename} to {output_dir}")
+    else:
+        print(f"Original PDF {base_filename} already exists in {output_dir}, skipping move.")
+
 if __name__ == "__main__":
     split_output_dir = get_timestamped_subdir(OUTPUT_DIR)
     pdf_files = list_pdfs(INPUT_DIR)
@@ -126,5 +143,6 @@ if __name__ == "__main__":
         pdf_path = os.path.join(INPUT_DIR, pdf_file)
         print()
         split_invoices(pdf_path, split_output_dir)
+        move_original_to_output(pdf_path, split_output_dir)
     write_csv_to_ready_for_invoicing(INVOICE_LIST)
     print(f"Total unique invoice numbers extracted: {len(INVOICE_LIST)}")
