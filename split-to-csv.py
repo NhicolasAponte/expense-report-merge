@@ -23,11 +23,11 @@ def get_timestamped_subdir(base_dir):
 def get_invoice_number_from_page(page_text):
     invoice_number = NOT_FOUND
     patterns = [
-        r'#\s*[mM](\d{6})',         # # M123456 or # m123456 (six digits)
-        r'm(\d{6})',                # m123456 or M123456 (six digits)
-        r'#\s*(\d{6})',             # # 123456 (six digits)
-        r'Work Order Number:\s*(\d{6})', # Work Order Number: 123456 (six digits)
-        r'Invoice #\s*(\d{6})',          # Invoice # 123456 (six digits)
+        r'(?<!quote\s)#\s*[mM](\d{6})',
+        r'(?<!quote\s)m(\d{6})',
+        r'Work Order Number:\s*(\d{6})',
+        r'Invoice #\s*(\d{6})',
+        r'(?<!quote\s)#\s*(\d{6})',
     ]
     # Search first line, then whole page
     first_line = page_text.strip().split('\n')[0] if page_text.strip() else ""
