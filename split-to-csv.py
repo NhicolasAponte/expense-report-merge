@@ -22,34 +22,27 @@ def get_timestamped_subdir(base_dir):
 
 def get_invoice_number_from_page(page_text):
     invoice_number = NOT_FOUND
-    # Try to find invoice number in the first line
+    patterns = [
+        r'#\s*[mM](\d{6})',         # # M123456 or # m123456 (six digits)
+        r'm(\d{6})',                # m123456 or M123456 (six digits)
+        r'#\s*(\d{6})',             # # 123456 (six digits)
+        r'Work Order Number:\s*(\d{6})', # Work Order Number: 123456 (six digits)
+        r'Invoice #\s*(\d{6})',          # Invoice # 123456 (six digits)
+    ]
+    # Search first line, then whole page
     first_line = page_text.strip().split('\n')[0] if page_text.strip() else ""
-    match = re.search(r'#\s*[mM](.{6})', first_line)
-    if match:
-        invoice_number = match.group(1).strip()
-    else:
-        first_line_lower = first_line.lower()
-        match_alt = re.search(r'm(\d{6})', first_line_lower)
-        if match_alt:
-            invoice_number = match_alt.group(1)
-        else:
-            match_digits = re.search(r'#\s*(\d{6})', first_line)
-            if match_digits:
-                invoice_number = match_digits.group(1)
-    # If not found in first line, search the whole page
-    if invoice_number == NOT_FOUND:
-        match = re.search(r'#\s*[mM](.{6})', page_text)
-        if match:
-            invoice_number = match.group(1).strip()
-        else:
-            page_text_lower = page_text.lower()
-            match_alt = re.search(r'm(\d{6})', page_text_lower)
-            if match_alt:
-                invoice_number = match_alt.group(1)
-            else:
-                match_digits = re.search(r'#\s*(\d{6})', page_text)
-                if match_digits:
-                    invoice_number = match_digits.group(1)
+    search_areas = [first_line, page_text]
+
+    for area in search_areas:
+        for pattern in patterns:
+            match = re.search(pattern, area)
+            if match:
+                invoice_number = match.group(1).strip()
+                break
+        if invoice_number != NOT_FOUND:
+            break
+
+    # Handle uniqueness in INVOICE_LIST
     if invoice_number != NOT_FOUND and invoice_number not in INVOICE_LIST:
         INVOICE_LIST.append(invoice_number)
     return invoice_number
