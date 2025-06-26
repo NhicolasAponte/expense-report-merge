@@ -23,19 +23,20 @@ def get_timestamped_subdir(base_dir):
 def get_invoice_number_from_page(page_text):
     invoice_number = NOT_FOUND
     patterns = [
-        r'(?<!quote\s)#\s*[mM](\d{6})',
-        r'(?<!quote\s)m(\d{6})',
+        r'#\s*[mM](\d{6})',
+        r'm(\d{6})',
         r'Work Order Number:\s*(\d{6})',
         r'Invoice #\s*(\d{6})',
-        r'(?<!quote\s)#\s*(\d{6})',
+        r'Invoice ID:\s*(\d{6})',
+        r'#\s*(\d{6})',
     ]
     # Search first line, then whole page
-    first_line = page_text.strip().split('\n')[0] if page_text.strip() else ""
-    search_areas = [first_line, page_text]
-
-    for area in search_areas:
+    lines = page_text.splitlines()
+    for line in lines:
+        if "quote" in line.lower():
+            continue 
         for pattern in patterns:
-            match = re.search(pattern, area)
+            match = re.search(pattern, line, re.IGNORECASE)
             if match:
                 invoice_number = match.group(1).strip()
                 break
@@ -100,7 +101,7 @@ def split_invoices(pdf_path, output_dir):
         print(f"Error splitting {pdf_path}: {e}")
 
 def get_csv_filename(prefix="invoice_batch"):
-    return f"{prefix}_{TIMESTAMP}.csv"
+    return f"00-{prefix}_{TIMESTAMP}.csv"
 
 def write_csv_to_ready_for_invoicing(data, filename=None):
     # Get the path to the user's Desktop/ready-for-invoicing
