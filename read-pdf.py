@@ -15,7 +15,9 @@ def read_pdf(pdf_path):
         if text == "":
             print(f"\n--- Page {i} ---")
             print("No text found on this page.")
-        # print(text.strip())
+        else: 
+            print(f"\n--- Page {i} ---")
+            print(text.strip())
 
 def main():
     for filename in os.listdir(INPUT_DIR):
