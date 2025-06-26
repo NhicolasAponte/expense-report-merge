@@ -7,12 +7,13 @@ from config import LOCAL_DESKTOP_TEMP
 
 INPUT_DIR = LOCAL_DESKTOP_TEMP
 OUTPUT_DIR = LOCAL_DESKTOP_TEMP
+DELIMITER = "_"
 
-def get_new_filename(original_name, suffix="_ocr"):
+def get_new_filename(original_name, suffix="ocr"):
     name, ext = os.path.splitext(original_name)
     now = datetime.now()
-    timestamp = now.strftime("%m%d_%H%M")
-    return f"{name}{suffix}_{timestamp}{ext}"
+    timestamp = now.strftime("%m%d-%H%M")
+    return f"00-{name}{DELIMITER}{suffix}-{timestamp}{ext}"
 
 def flip_pdf_in_memory(input_pdf_path):
     reader = PdfReader(input_pdf_path)
