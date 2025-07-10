@@ -157,7 +157,6 @@ def has_all_required_files(name, folder):
     required_files = [
         folder / f"{name}_st.pdf",
         folder / f"{name}_exp.pdf",
-        folder / f"{name}_code.pdf"
     ]
     for file in required_files:
         if not file.exists():
@@ -180,7 +179,6 @@ def process_pdfs():
         files_to_merge = [
             input_folder / f"{name}_st.pdf",
             input_folder / f"{name}_exp.pdf",
-            input_folder / f"{name}_code.pdf"
         ]
         
         # cleaned_files = [remove_blank_pages(f) for f in files_to_merge if f.exists()]
@@ -188,7 +186,6 @@ def process_pdfs():
         cleaned_files = [
             process_statement(input_folder / f"{name}_st.pdf"),
             process_expense(input_folder / f"{name}_exp.pdf"),
-            process_transactions(input_folder / f"{name}_code.pdf")
         ]
 
         merger = PdfMerger()
