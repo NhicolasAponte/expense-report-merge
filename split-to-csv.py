@@ -122,7 +122,11 @@ def write_csv_to_ready_for_invoicing(data, filename=None):
     output_path = os.path.join(target_dir, filename)
     with open(output_path, "w", newline='') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(data)
+        # Write header row
+        # writer.writerow(['Invoice Number'])
+        # Write each invoice number on a separate row
+        for invoice_number in data:
+            writer.writerow([invoice_number])
     print(f"Cleaned invoice list exported to {output_path}")
 
 def move_original_to_output(pdf_path, output_dir):
