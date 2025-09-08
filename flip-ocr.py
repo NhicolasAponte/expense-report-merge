@@ -34,13 +34,16 @@ def main():
             input_pdf = os.path.join(INPUT_DIR, filename)
             print(f"Flipping and OCR: {filename}")
             flipped_pdf = flip_pdf_in_memory(input_pdf)
-            output_pdf = os.path.join(OUTPUT_DIR, get_new_filename(filename, suffix="_ocr"))
+            output_pdf = os.path.join(OUTPUT_DIR, get_new_filename(filename, suffix="ocr"))
             ocrmypdf.ocr(
                 flipped_pdf,
                 output_pdf,
                 rotate_pages=True,
                 deskew=True,
                 progress_bar=True,
+                # force_ocr=True,
+                # redo_ocr=True,
+                # skip_text=True,
             )
     print("Done flipping and OCR'ing all PDFs.")
 
