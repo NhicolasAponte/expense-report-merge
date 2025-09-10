@@ -5,16 +5,17 @@ from config import LOCAL_DESKTOP_TEMP
 
 INPUT_DIR = LOCAL_DESKTOP_TEMP
 OUTPUT_DIR = LOCAL_DESKTOP_TEMP
+DELIMITER = "_"
 
-def get_new_filename(original_name, suffix="_ocr"):
+def get_new_filename(original_name, suffix="ocr"):
     name, ext = os.path.splitext(original_name)
     now = datetime.now()
-    timestamp = now.strftime("%m%d_%H%M")
-    return f"{name}{suffix}_{timestamp}{ext}"
+    timestamp = now.strftime("%m%d-%H%M")
+    return f"00-{name}{DELIMITER}{suffix}-{timestamp}{ext}"
 
 def ocr_pdf(pdf_path):
     "APPLYING OCR TO PDF"
-    output_filename = get_new_filename(os.path.basename(pdf_path), suffix="_ocr")
+    output_filename = get_new_filename(os.path.basename(pdf_path), suffix="ocr")
     output_path = os.path.join(OUTPUT_DIR, output_filename)
     ocrmypdf.ocr(
         pdf_path,
@@ -22,8 +23,8 @@ def ocr_pdf(pdf_path):
         rotate_pages=True,
         deskew=True,
         progress_bar=True,
-        force_ocr=True,
-        skip_text=True
+        # force_ocr=True,
+        # skip_text=True
     )
 
 def main():
