@@ -156,7 +156,7 @@ def extract_earnings_from_page(text, filename, page_num):
             break
     
     if earnings_start == -1:
-        print(f"   ⚠️  Page {page_num}: No EARNINGS section found")
+        print(f"   WARNING Page {page_num}: No EARNINGS section found")
         return []
     
     earnings_end = earnings_end if earnings_end > 0 else len(lines)
@@ -169,10 +169,10 @@ def extract_earnings_from_page(text, filename, page_num):
             earnings_categories.append(line)
     
     if not earnings_categories:
-        print(f"   ⚠️  Page {page_num}: No earnings categories found")
+        print(f"   WARNING Page {page_num}: No earnings categories found")
         return []
     
-    print(f"   📋 Page {page_num}: Found {len(earnings_categories)} categories: {earnings_categories}")
+    print(f"   Categories: Found {len(earnings_categories)} categories: {earnings_categories}")
     
     # Find the Hours column data
     hours_data = []
@@ -195,20 +195,53 @@ def extract_earnings_from_page(text, filename, page_num):
             else:
                 hours_data.append("0.00")
     
-    # Find Amount and YTD data
+    # Find Amount and YTD data - handle both layout types
     amount_ytd_data = []
     amount_line_idx = -1
     ytd_line_idx = -1
     
     # Look for "Amount" and "YTD" headers
     for i, line in enumerate(lines):
-        if "Amount" in line and amount_line_idx == -1:
+        if line.strip() == "Amount" and amount_line_idx == -1:
             amount_line_idx = i
         if line.strip() == "YTD" and ytd_line_idx == -1:
             ytd_line_idx = i
     
-    # Extract Amount and YTD data pairs
-    if ytd_line_idx >= 0:
+    # Check which layout pattern we have
+    if amount_line_idx >= 0 and ytd_line_idx >= 0:
+        # Layout Type 2: Separate Amount and YTD headers (like Page 2)
+        print(f"   Layout: Using separate Amount/YTD headers layout")
+        
+        # Extract Amount data
+        amount_data = []
+        for i in range(amount_line_idx + 1, min(amount_line_idx + 1 + len(earnings_categories), len(lines))):
+            line = lines[i].strip()
+            amount_match = re.search(r'\d+(?:,\d{3})*\.?\d*', line)
+            if amount_match:
+                amount_data.append(amount_match.group().replace(',', ''))
+            else:
+                amount_data.append("0.00")
+        
+        # Extract YTD data
+        ytd_data = []
+        for i in range(ytd_line_idx + 1, min(ytd_line_idx + 1 + len(earnings_categories), len(lines))):
+            line = lines[i].strip()
+            ytd_match = re.search(r'\d+(?:,\d{3})*\.?\d*', line)
+            if ytd_match:
+                ytd_data.append(ytd_match.group().replace(',', ''))
+            else:
+                ytd_data.append("0.00")
+        
+        # Combine amount and YTD data
+        for i in range(len(earnings_categories)):
+            amount = amount_data[i] if i < len(amount_data) else "0.00"
+            ytd = ytd_data[i] if i < len(ytd_data) else "0.00"
+            amount_ytd_data.append((amount, ytd))
+            
+    elif ytd_line_idx >= 0:
+        # Layout Type 1: Combined Amount and YTD pairs after YTD header (like Page 1)
+        print(f"   Layout: Using combined Amount/YTD pairs layout")
+        
         # The data starts after the YTD header
         data_start = ytd_line_idx + 1
         for i in range(data_start, min(data_start + len(earnings_categories), len(lines))):
@@ -222,6 +255,11 @@ def extract_earnings_from_page(text, filename, page_num):
                 amount_ytd_data.append((amount, ytd))
             else:
                 amount_ytd_data.append(("0.00", "0.00"))
+    else:
+        # Fallback: no clear pattern found
+        print(f"   Warning: No clear Amount/YTD pattern found")
+        for i in range(len(earnings_categories)):
+            amount_ytd_data.append(("0.00", "0.00"))
     
     # Match categories with their data
     for i, category in enumerate(earnings_categories):
@@ -241,13 +279,13 @@ def extract_earnings_from_page(text, filename, page_num):
         }
         
         page_earnings.append(earnings_record)
-        print(f"   💰 {category}: Hours={hours}, Amount={amount}, YTD={ytd}")
+        print(f"   {category}: Hours={hours}, Amount={amount}, YTD={ytd}")
     
     # Show employee data extracted for this page
     if page_earnings:
-        print(f"   👤 Employee: {employee_data['employee_name']}")
-        print(f"   📋 Employee #: {employee_data['employee_number']}")
-        print(f"   📅 Period End: {employee_data['period_end']}")
+        print(f"   Employee: {employee_data['employee_name']}")
+        print(f"   Employee #: {employee_data['employee_number']}")
+        print(f"   Period End: {employee_data['period_end']}")
     
     return page_earnings
 
@@ -261,13 +299,13 @@ def extract_all_earnings(pdf_path):
         filename = os.path.basename(pdf_path)
         all_earnings = []
         
-        print(f"📄 Processing {filename} ({len(reader.pages)} pages)")
+        print(f"Processing {filename} ({len(reader.pages)} pages)")
         
         # Process each page
         for page_num, page in enumerate(reader.pages, start=1):
             text = page.extract_text() or ""
             if not text.strip():
-                print(f"   ⚠️  Page {page_num}: No text found")
+                print(f"   WARNING Page {page_num}: No text found")
                 continue
             
             # Extract earnings from this page
@@ -275,20 +313,20 @@ def extract_all_earnings(pdf_path):
             
             if page_earnings:
                 all_earnings.extend(page_earnings)
-                print(f"   ✅ Page {page_num}: {len(page_earnings)} earnings records extracted")
+                print(f"   SUCCESS Page {page_num}: {len(page_earnings)} earnings records extracted")
             else:
-                print(f"   ⚠️  Page {page_num}: No earnings data found")
+                print(f"   WARNING Page {page_num}: No earnings data found")
         
         return all_earnings
         
     except Exception as e:
-        print(f"❌ Error processing {pdf_path}: {str(e)}")
+        print(f"ERROR processing {pdf_path}: {str(e)}")
         return []
 
 def export_earnings_to_csv(earnings_data, output_file):
     """Export earnings data to CSV file"""
     if not earnings_data:
-        print("❌ No earnings data to export.")
+        print("ERROR No earnings data to export.")
         return
     
     # CSV headers
@@ -302,28 +340,28 @@ def export_earnings_to_csv(earnings_data, output_file):
             for record in earnings_data:
                 writer.writerow(record)
         
-        print(f"✅ Earnings data exported to: {output_file}")
-        print(f"📊 Records exported: {len(earnings_data)}")
+        print(f"SUCCESS Earnings data exported to: {output_file}")
+        print(f"Records exported: {len(earnings_data)}")
         
         # Show summary statistics
         categories = set(record['category'] for record in earnings_data)
         pages = set(record['page_number'] for record in earnings_data)
         
-        print(f"📈 Summary:")
+        print(f"Summary:")
         print(f"   Pages processed: {len(pages)}")
         print(f"   Unique categories: {len(categories)}")
         print(f"   Categories found: {sorted(categories)}")
         
     except Exception as e:
-        print(f"❌ Error writing CSV file: {str(e)}")
+        print(f"ERROR writing CSV file: {str(e)}")
 
 def main():
     """Main function to process the PDF and export earnings data"""
     if not os.path.exists(INPUT_FILE):
-        print(f"❌ Input file not found: {INPUT_FILE}")
+        print(f"ERROR Input file not found: {INPUT_FILE}")
         return
     
-    print(f"🔍 Extracting earnings data from: {INPUT_FILE}")
+    print(f"Extracting earnings data from: {INPUT_FILE}")
     
     # Extract all earnings data
     earnings_data = extract_all_earnings(INPUT_FILE)
@@ -331,10 +369,10 @@ def main():
     if earnings_data:
         # Export to CSV
         export_earnings_to_csv(earnings_data, OUTPUT_CSV)
-        print(f"\n🎉 Processing complete!")
+        print(f"\nProcessing complete!")
         print(f"   📁 CSV file location: {OUTPUT_CSV}")
     else:
-        print("❌ No earnings data found to export.")
+        print("ERROR No earnings data found to export.")
 
 if __name__ == "__main__":
     main()
