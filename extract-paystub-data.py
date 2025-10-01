@@ -36,20 +36,19 @@ def extract_paystub_data(pdf_path):
         if name_match:
             data['employee_name'] = name_match.group(1).strip()
         
-        # Extract the actual pay rate (the number that appears after Pay Rate***)
-        pay_rate_pattern = r'Pay Rate\*\*\*-\*\*-(\d+)'
+        # Extract pay rate (the decimal number after "HW")
+        pay_rate_pattern = r'HW(\d+\.\d+)'
         pay_rate_match = re.search(pay_rate_pattern, text)
         if pay_rate_match:
             data['pay_rate'] = pay_rate_match.group(1).strip()
         
-        # Extract stub number (the code between Stub Number and Hours)
+        # Extract stub number (the code between "Stub Number" and "Hours")
         stub_pattern = r'Stub Number([A-Z0-9]+)Hours'
         stub_match = re.search(stub_pattern, text)
         if stub_match:
             data['stub_number'] = stub_match.group(1).strip()
         
-        # Extract employee number from the stub number field (seems to be embedded)
-        # The actual employee number appears to be the alphanumeric after "00-"
+        # Extract employee number (the code after "YTD" and before "***")
         emp_pattern = r'YTD([0-9]{2}-[A-Z]+)\*\*\*'
         emp_match = re.search(emp_pattern, text)
         if emp_match:
