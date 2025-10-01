@@ -18,7 +18,8 @@ def extract_paystub_data_from_page(text, filename, page_num):
         'employee_name': '',
         'employee_number': '',
         'pay_rate': '',
-        'stub_number': ''
+        'stub_number': '',
+        'period_end': ''
     }
     
     # Try Pattern Set 1: Formatted layout (Page 1 style with line breaks)
@@ -56,6 +57,13 @@ def extract_paystub_data_from_page(text, filename, page_num):
         data['stub_number'] = stub_match.group(1).strip()
         success_count += 1
     
+    # Extract period end date (formatted layout: "Period End\n9/13/2025")
+    period_end_pattern_1 = r'Period End\s*\n(\d{1,2}/\d{1,2}/\d{4})'
+    period_end_match = re.search(period_end_pattern_1, text)
+    if period_end_match:
+        data['period_end'] = period_end_match.group(1).strip()
+        success_count += 1
+    
     # If Pattern Set 1 didn't find enough data, try Pattern Set 2: Compact layout (Page 2 style)
     if success_count < 3:  # If we didn't find at least 3 out of 4 fields
         
@@ -90,6 +98,13 @@ def extract_paystub_data_from_page(text, filename, page_num):
             stub_match = re.search(stub_pattern_2, text)
             if stub_match:
                 data['stub_number'] = stub_match.group(1).strip()
+        
+        # Extract period end date (compact layout: "10/19/2024HW25.00Period EndPay Rate")
+        if not data['period_end']:
+            period_end_pattern_2 = r'(\d{1,2}/\d{1,2}/\d{4}).*?Period End'
+            period_end_match = re.search(period_end_pattern_2, text)
+            if period_end_match:
+                data['period_end'] = period_end_match.group(1).strip()
     
     return data
 
@@ -115,7 +130,7 @@ def extract_paystub_data(pdf_path):
             
             # Only add if we found at least some data
             if any([page_data['employee_name'], page_data['employee_number'], 
-                   page_data['pay_rate'], page_data['stub_number']]):
+                   page_data['pay_rate'], page_data['stub_number'], page_data['period_end']]):
                 extracted_pages.append(page_data)
                 print(f"   ✅ Page {page_num}: Data extracted")
             else:
@@ -133,8 +148,8 @@ def export_to_csv(data_list, output_file):
         print("No data to export.")
         return
     
-    # CSV headers (now includes page_number)
-    headers = ['filename', 'page_number', 'employee_name', 'employee_number', 'pay_rate', 'stub_number', 'processed_date']
+    # CSV headers (now includes page_number and period_end)
+    headers = ['filename', 'page_number', 'employee_name', 'employee_number', 'pay_rate', 'stub_number', 'period_end']
     
     try:
         with open(output_file, 'w', newline='', encoding='utf-8') as csvfile:
@@ -142,8 +157,7 @@ def export_to_csv(data_list, output_file):
             writer.writeheader()
             
             for data in data_list:
-                # Add processing timestamp
-                data['processed_date'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                # Period end date is already extracted from the PDF
                 writer.writerow(data)
         
         print(f"✅ Data exported to: {output_file}")
@@ -187,6 +201,7 @@ def main():
                     print(f"      📋 Emp #: {page_data['employee_number']}")
                     print(f"      💰 Pay Rate: {page_data['pay_rate']}")
                     print(f"      🆔 Stub #: {page_data['stub_number']}")
+                    print(f"      📅 Period End: {page_data['period_end']}")
             else:
                 print(f"   ❌ Failed to extract data from {filename}")
             print()
