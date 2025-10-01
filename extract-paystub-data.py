@@ -26,14 +26,39 @@ def extract_paystub_data_from_page(text, filename, page_num):
     # Try Pattern Set 1: Formatted layout (Page 1 style with line breaks)
     success_count = 0
     
+    # Utility: validate candidate name (kept lightweight to avoid false positives)
+    def _is_valid_name(name: str) -> bool:
+        if not name:
+            return False
+        if any(ch.isdigit() for ch in name):  # reject if digits inside
+            return False
+        tokens = [t for t in name.replace(',', ' ').split() if t]
+        if len(tokens) < 2 or len(tokens) > 7:
+            return False
+        # Require at least one token length > 1 (avoid just initials) and one capitalized word
+        if not any(len(t.strip(".-")) > 1 for t in tokens):
+            return False
+        if not any(t[0].isupper() for t in tokens if t):
+            return False
+        # Suffix allowance
+        suffixes = {"JR", "SR", "II", "III", "IV", "V"}
+        # Remove periods for suffix compare
+        if tokens[-1].rstrip('.').upper() in suffixes and len(tokens) < 2:
+            return False
+        # Reasonable total length
+        if not (5 < len(name) < 60):
+            return False
+        return True
+
     # Extract employee name (formatted layout - look for name after company address block)
-    # Pattern: Look for a line with person's name after a zip code pattern
-    name_pattern_1 = r'[A-Z]{2}\s+\d{5}\s*\n([A-Za-z\s\.]+?)\s*\n'
+    # Enhanced pattern: allows hyphens, apostrophes, commas, suffixes
+    # Anchor: state abbreviation + ZIP then newline then the name line
+    # NOTE: Character class includes letters, period, apostrophe, hyphen, space, comma
+    name_pattern_1 = r"[A-Z]{2}\s+\d{5}\s*\n([A-Za-z][A-Za-z\.\'\- ,]{3,60}?)(?:,\s*(?:Jr|Sr|II|III|IV|V))?\s*\n"
     name_match = re.search(name_pattern_1, text)
     if name_match:
         candidate_name = name_match.group(1).strip()
-        # Validate it looks like a person's name (has at least 2 words, reasonable length)
-        if len(candidate_name.split()) >= 2 and len(candidate_name) > 5 and len(candidate_name) < 50:
+        if _is_valid_name(candidate_name):
             data['employee_name'] = candidate_name
             success_count += 1
     
@@ -70,14 +95,32 @@ def extract_paystub_data_from_page(text, filename, page_num):
         
         # Extract employee name (compact layout - look for name after date)
         if not data['employee_name']:
-            # Pattern: Look for name after date - more flexible pattern
-            name_pattern_2 = r'\d{1,2}/\d{1,2}/\d{4}\s+([A-Za-z\s\.]+?)\s*\n'
+            # Pattern: Look for name after date - enhanced character class & optional suffix
+            name_pattern_2 = r"\d{1,2}/\d{1,2}/\d{4}\s+([A-Za-z][A-Za-z\.\'\- ,]{3,60}?)(?:,\s*(?:Jr|Sr|II|III|IV|V))?\s*\n"
             name_match = re.search(name_pattern_2, text)
             if name_match:
                 candidate_name = name_match.group(1).strip()
-                # Validate it looks like a person's name
-                if len(candidate_name.split()) >= 2 and len(candidate_name) > 5 and len(candidate_name) < 50:
+                if _is_valid_name(candidate_name):
                     data['employee_name'] = candidate_name
+
+        # Fallback heuristic: scan lines between header and "Employee Number"
+        if not data['employee_name']:
+            lines = text.splitlines()
+            # Identify possible window
+            try:
+                header_end_idx = 0
+                for i, ln in enumerate(lines[:10]):  # search first 10 lines for ZIP (5 digits)
+                    if re.search(r'\b\d{5}\b', ln):
+                        header_end_idx = i
+                emp_idx = next((i for i, ln in enumerate(lines) if 'Employee Number' in ln), None)
+                window = lines[header_end_idx+1:emp_idx if emp_idx else header_end_idx+6]
+                for cand in window:
+                    c = cand.strip()
+                    if _is_valid_name(c):
+                        data['employee_name'] = c
+                        break
+            except Exception:
+                pass
         
         # Extract pay rate (compact layout: "HW 25.00" or "HW25.00")
         if not data['pay_rate']:
