@@ -2,7 +2,10 @@ import os
 from PyPDF2 import PdfReader
 from config import LOCAL_DESKTOP_TEMP
 
-INPUT_DIR = LOCAL_DESKTOP_TEMP
+# Reusable path variables
+TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "test-files")
+INPUT_DIR = TEST_FILES_DIR  # Changed to use test-files directory
+# INPUT_DIR = LOCAL_DESKTOP_TEMP  # Original config path
 # INPUT_DIR = r"C:\Users\nflores\Desktop\temp\ready-for-invoicing\0620_1313"
 
 def read_pdf(pdf_path):
