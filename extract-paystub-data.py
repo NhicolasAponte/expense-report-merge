@@ -20,6 +20,7 @@ def extract_paystub_data_from_page(text, filename, page_num):
         'pay_rate': '',
         'stub_number': '',
         'period_end': ''
+    
     }
     
     # Try Pattern Set 1: Formatted layout (Page 1 style with line breaks)
@@ -69,8 +70,8 @@ def extract_paystub_data_from_page(text, filename, page_num):
         
         # Extract employee name (compact layout - look for name after date)
         if not data['employee_name']:
-            # Pattern: Look for name between date and 4-digit number (likely address number)
-            name_pattern_2 = r'\d{1,2}/\d{1,2}/\d{4}([A-Za-z\s\.]+?)\d{4}'
+            # Pattern: Look for name after date - more flexible pattern
+            name_pattern_2 = r'\d{1,2}/\d{1,2}/\d{4}\s+([A-Za-z\s\.]+?)\s*\n'
             name_match = re.search(name_pattern_2, text)
             if name_match:
                 candidate_name = name_match.group(1).strip()
@@ -78,16 +79,16 @@ def extract_paystub_data_from_page(text, filename, page_num):
                 if len(candidate_name.split()) >= 2 and len(candidate_name) > 5 and len(candidate_name) < 50:
                     data['employee_name'] = candidate_name
         
-        # Extract pay rate (compact layout: "HW25.00")
+        # Extract pay rate (compact layout: "HW 25.00" or "HW25.00")
         if not data['pay_rate']:
-            pay_rate_pattern_2 = r'HW(\d+\.\d+)'
+            pay_rate_pattern_2 = r'HW\s*(\d+\.\d+)'
             pay_rate_match = re.search(pay_rate_pattern_2, text)
             if pay_rate_match:
                 data['pay_rate'] = pay_rate_match.group(1).strip()
         
-        # Extract employee number (compact layout: "YTD00-ANA***")
+        # Extract employee number (compact layout: "YTD20-XXX" format)
         if not data['employee_number']:
-            emp_pattern_2 = r'YTD([0-9]{2}-[A-Z]+)\*\*\*'
+            emp_pattern_2 = r'YTD([0-9]{2}-[A-Z]+[0-9]*)'
             emp_match = re.search(emp_pattern_2, text)
             if emp_match:
                 data['employee_number'] = emp_match.group(1).strip()
