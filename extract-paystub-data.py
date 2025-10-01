@@ -76,19 +76,58 @@ def extract_paystub_data_from_page(text, filename, page_num):
         data['employee_number'] = emp_match.group(1).strip()
         success_count += 1
     
-    # Extract stub number (formatted layout: "Stub Number \nD000122840")
-    stub_pattern_1 = r'Stub Number\s*\n([A-Z0-9]+)'
+    # Extract stub number (formatted layout: standard newline form)
+    stub_pattern_1 = r'Stub Number\s*\n([A-Z0-9]{5,})'
     stub_match = re.search(stub_pattern_1, text)
     if stub_match:
-        data['stub_number'] = stub_match.group(1).strip()
-        success_count += 1
-    
-    # Extract period end date (formatted layout: "Period End\n9/13/2025")
+        candidate = stub_match.group(1).strip()
+        if candidate.startswith('D'):
+            data['stub_number'] = candidate
+            success_count += 1
+
+    # Extract period end date (standard layout newline)
     period_end_pattern_1 = r'Period End\s*\n(\d{1,2}/\d{1,2}/\d{4})'
     period_end_match = re.search(period_end_pattern_1, text)
     if period_end_match:
         data['period_end'] = period_end_match.group(1).strip()
         success_count += 1
+
+    # Additional compact / merged label recovery BEFORE pattern set 2 fallback
+    if not data['period_end'] or not data['stub_number']:
+        # Look for merged line: "Period End Stub Number" style followed by date + stub same or next line
+        # Pattern: optional 'Period End' then date then optional other labels then stub (D+digits)
+        merged_pattern = r'(?:Period End\s+Stub Number|Period End Stub Number)?\s*(\d{1,2}/\d{1,2}/\d{4})\s+(D\d{6,})'
+        merged_match = re.search(merged_pattern, text)
+        if merged_match:
+            date_val, stub_val = merged_match.group(1), merged_match.group(2)
+            if not data['period_end']:
+                data['period_end'] = date_val
+            if not data['stub_number']:
+                data['stub_number'] = stub_val
+
+    if not data['stub_number']:
+        # Fallback: last D followed by 6+ digits in page
+        stub_candidates = re.findall(r'D\d{6,}', text)
+        if stub_candidates:
+            data['stub_number'] = stub_candidates[-1]
+
+    if not data['period_end']:
+        # Fallback: choose date closest to 'Pay Rate' or 'Stub Number'
+        dates = list(re.finditer(r'\b\d{1,2}/\d{1,2}/\d{4}\b', text))
+        if dates:
+            anchor_indices = []
+            for anchor in ('Pay Rate', 'Stub Number'):
+                idx = text.find(anchor)
+                if idx != -1:
+                    anchor_indices.append(idx)
+            if anchor_indices:
+                target = min(anchor_indices)
+                # Pick date whose start position absolute distance to anchor is minimal
+                best = min(dates, key=lambda m: abs(m.start() - target))
+                data['period_end'] = best.group(0)
+            else:
+                # Default: first date (often correct for period end in top block)
+                data['period_end'] = dates[0].group(0)
     
     # If Pattern Set 1 didn't find enough data, try Pattern Set 2: Compact layout (Page 2 style)
     if success_count < 3:  # If we didn't find at least 3 out of 4 fields
@@ -136,16 +175,16 @@ def extract_paystub_data_from_page(text, filename, page_num):
             if emp_match:
                 data['employee_number'] = emp_match.group(1).strip()
         
-        # Extract stub number (compact layout: "Stub NumberD000105607Hours")
+        # Extract stub number (compact legacy pattern)
         if not data['stub_number']:
-            stub_pattern_2 = r'Stub Number([A-Z0-9]+)Hours'
+            stub_pattern_2 = r'Stub Number(?:\s|)(D\d{6,})'
             stub_match = re.search(stub_pattern_2, text)
             if stub_match:
                 data['stub_number'] = stub_match.group(1).strip()
-        
-        # Extract period end date (compact layout: "10/19/2024HW25.00Period EndPay Rate")
+
+        # Extract period end date (compact layout inline before labels)
         if not data['period_end']:
-            period_end_pattern_2 = r'(\d{1,2}/\d{1,2}/\d{4}).*?Period End'
+            period_end_pattern_2 = r'(\d{1,2}/\d{1,2}/\d{4}).{0,40}?Period End'
             period_end_match = re.search(period_end_pattern_2, text)
             if period_end_match:
                 data['period_end'] = period_end_match.group(1).strip()
