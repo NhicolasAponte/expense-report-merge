@@ -21,29 +21,75 @@ def extract_paystub_data_from_page(text, filename, page_num):
         'stub_number': ''
     }
     
-    # Extract employee name (appears between date and address)
-    name_pattern = r'\d{1,2}/\d{1,2}/\d{4}([A-Za-z\s\.]+?)\d{4}\s+Tuttle'
-    name_match = re.search(name_pattern, text)
-    if name_match:
-        data['employee_name'] = name_match.group(1).strip()
+    # Try Pattern Set 1: Formatted layout (Page 1 style with line breaks)
+    success_count = 0
     
-    # Extract pay rate (the decimal number after "HW")
-    pay_rate_pattern = r'HW(\d+\.\d+)'
-    pay_rate_match = re.search(pay_rate_pattern, text)
+    # Extract employee name (formatted layout - look for name after company address block)
+    # Pattern: Look for a line with person's name after a zip code pattern
+    name_pattern_1 = r'[A-Z]{2}\s+\d{5}\s*\n([A-Za-z\s\.]+?)\s*\n'
+    name_match = re.search(name_pattern_1, text)
+    if name_match:
+        candidate_name = name_match.group(1).strip()
+        # Validate it looks like a person's name (has at least 2 words, reasonable length)
+        if len(candidate_name.split()) >= 2 and len(candidate_name) > 5 and len(candidate_name) < 50:
+            data['employee_name'] = candidate_name
+            success_count += 1
+    
+    # Extract pay rate (formatted layout: "Pay Rate \n27.50 HW")
+    pay_rate_pattern_1 = r'Pay Rate\s*\n(\d+\.\d+)\s*HW'
+    pay_rate_match = re.search(pay_rate_pattern_1, text)
     if pay_rate_match:
         data['pay_rate'] = pay_rate_match.group(1).strip()
+        success_count += 1
     
-    # Extract stub number (the code between "Stub Number" and "Hours")
-    stub_pattern = r'Stub Number([A-Z0-9]+)Hours'
-    stub_match = re.search(stub_pattern, text)
-    if stub_match:
-        data['stub_number'] = stub_match.group(1).strip()
-    
-    # Extract employee number (the code after "YTD" and before "***")
-    emp_pattern = r'YTD([0-9]{2}-[A-Z]+)\*\*\*'
-    emp_match = re.search(emp_pattern, text)
+    # Extract employee number (formatted layout: "Employee Number \n00-ANA")
+    emp_pattern_1 = r'Employee Number\s*\n([0-9]{2}-[A-Z]+)'
+    emp_match = re.search(emp_pattern_1, text)
     if emp_match:
         data['employee_number'] = emp_match.group(1).strip()
+        success_count += 1
+    
+    # Extract stub number (formatted layout: "Stub Number \nD000122840")
+    stub_pattern_1 = r'Stub Number\s*\n([A-Z0-9]+)'
+    stub_match = re.search(stub_pattern_1, text)
+    if stub_match:
+        data['stub_number'] = stub_match.group(1).strip()
+        success_count += 1
+    
+    # If Pattern Set 1 didn't find enough data, try Pattern Set 2: Compact layout (Page 2 style)
+    if success_count < 3:  # If we didn't find at least 3 out of 4 fields
+        
+        # Extract employee name (compact layout - look for name after date)
+        if not data['employee_name']:
+            # Pattern: Look for name between date and 4-digit number (likely address number)
+            name_pattern_2 = r'\d{1,2}/\d{1,2}/\d{4}([A-Za-z\s\.]+?)\d{4}'
+            name_match = re.search(name_pattern_2, text)
+            if name_match:
+                candidate_name = name_match.group(1).strip()
+                # Validate it looks like a person's name
+                if len(candidate_name.split()) >= 2 and len(candidate_name) > 5 and len(candidate_name) < 50:
+                    data['employee_name'] = candidate_name
+        
+        # Extract pay rate (compact layout: "HW25.00")
+        if not data['pay_rate']:
+            pay_rate_pattern_2 = r'HW(\d+\.\d+)'
+            pay_rate_match = re.search(pay_rate_pattern_2, text)
+            if pay_rate_match:
+                data['pay_rate'] = pay_rate_match.group(1).strip()
+        
+        # Extract employee number (compact layout: "YTD00-ANA***")
+        if not data['employee_number']:
+            emp_pattern_2 = r'YTD([0-9]{2}-[A-Z]+)\*\*\*'
+            emp_match = re.search(emp_pattern_2, text)
+            if emp_match:
+                data['employee_number'] = emp_match.group(1).strip()
+        
+        # Extract stub number (compact layout: "Stub NumberD000105607Hours")
+        if not data['stub_number']:
+            stub_pattern_2 = r'Stub Number([A-Z0-9]+)Hours'
+            stub_match = re.search(stub_pattern_2, text)
+            if stub_match:
+                data['stub_number'] = stub_match.group(1).strip()
     
     return data
 
