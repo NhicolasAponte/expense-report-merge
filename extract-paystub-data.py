@@ -9,56 +9,77 @@ TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "test-files")
 INPUT_DIR = TEST_FILES_DIR
 OUTPUT_CSV = os.path.join(TEST_FILES_DIR, "paystub_data.csv")
 
+def extract_paystub_data_from_page(text, filename, page_num):
+    """Extract employee data from a single page of text"""
+    # Initialize data dictionary
+    data = {
+        'filename': filename,
+        'page_number': page_num,
+        'employee_name': '',
+        'employee_number': '',
+        'pay_rate': '',
+        'stub_number': ''
+    }
+    
+    # Extract employee name (appears between date and address)
+    name_pattern = r'\d{1,2}/\d{1,2}/\d{4}([A-Za-z\s\.]+?)\d{4}\s+Tuttle'
+    name_match = re.search(name_pattern, text)
+    if name_match:
+        data['employee_name'] = name_match.group(1).strip()
+    
+    # Extract pay rate (the decimal number after "HW")
+    pay_rate_pattern = r'HW(\d+\.\d+)'
+    pay_rate_match = re.search(pay_rate_pattern, text)
+    if pay_rate_match:
+        data['pay_rate'] = pay_rate_match.group(1).strip()
+    
+    # Extract stub number (the code between "Stub Number" and "Hours")
+    stub_pattern = r'Stub Number([A-Z0-9]+)Hours'
+    stub_match = re.search(stub_pattern, text)
+    if stub_match:
+        data['stub_number'] = stub_match.group(1).strip()
+    
+    # Extract employee number (the code after "YTD" and before "***")
+    emp_pattern = r'YTD([0-9]{2}-[A-Z]+)\*\*\*'
+    emp_match = re.search(emp_pattern, text)
+    if emp_match:
+        data['employee_number'] = emp_match.group(1).strip()
+    
+    return data
+
 def extract_paystub_data(pdf_path):
-    """Extract employee data from paystub PDF"""
+    """Extract employee data from all pages of paystub PDF"""
     try:
         reader = PdfReader(pdf_path)
         if len(reader.pages) == 0:
-            return None
+            return []
         
-        # Extract text from first page
-        text = reader.pages[0].extract_text() or ""
-        if not text.strip():
-            return None
+        filename = os.path.basename(pdf_path)
+        extracted_pages = []
         
-        # Initialize data dictionary
-        data = {
-            'filename': os.path.basename(pdf_path),
-            'employee_name': '',
-            'employee_number': '',
-            'pay_rate': '',
-            'stub_number': ''
-        }
+        # Process each page
+        for page_num, page in enumerate(reader.pages, start=1):
+            text = page.extract_text() or ""
+            if not text.strip():
+                print(f"   ⚠️  Page {page_num}: No text found")
+                continue
+            
+            # Extract data from this page
+            page_data = extract_paystub_data_from_page(text, filename, page_num)
+            
+            # Only add if we found at least some data
+            if any([page_data['employee_name'], page_data['employee_number'], 
+                   page_data['pay_rate'], page_data['stub_number']]):
+                extracted_pages.append(page_data)
+                print(f"   ✅ Page {page_num}: Data extracted")
+            else:
+                print(f"   ⚠️  Page {page_num}: No paystub data found")
         
-        # Extract employee name (appears between date and address)
-        name_pattern = r'\d{1,2}/\d{1,2}/\d{4}([A-Za-z\s\.]+?)\d{4}\s+Tuttle'
-        name_match = re.search(name_pattern, text)
-        if name_match:
-            data['employee_name'] = name_match.group(1).strip()
-        
-        # Extract pay rate (the decimal number after "HW")
-        pay_rate_pattern = r'HW(\d+\.\d+)'
-        pay_rate_match = re.search(pay_rate_pattern, text)
-        if pay_rate_match:
-            data['pay_rate'] = pay_rate_match.group(1).strip()
-        
-        # Extract stub number (the code between "Stub Number" and "Hours")
-        stub_pattern = r'Stub Number([A-Z0-9]+)Hours'
-        stub_match = re.search(stub_pattern, text)
-        if stub_match:
-            data['stub_number'] = stub_match.group(1).strip()
-        
-        # Extract employee number (the code after "YTD" and before "***")
-        emp_pattern = r'YTD([0-9]{2}-[A-Z]+)\*\*\*'
-        emp_match = re.search(emp_pattern, text)
-        if emp_match:
-            data['employee_number'] = emp_match.group(1).strip()
-        
-        return data
+        return extracted_pages
         
     except Exception as e:
         print(f"Error processing {pdf_path}: {str(e)}")
-        return None
+        return []
 
 def export_to_csv(data_list, output_file):
     """Export extracted data to CSV file"""
@@ -66,8 +87,8 @@ def export_to_csv(data_list, output_file):
         print("No data to export.")
         return
     
-    # CSV headers
-    headers = ['filename', 'employee_name', 'employee_number', 'pay_rate', 'stub_number', 'processed_date']
+    # CSV headers (now includes page_number)
+    headers = ['filename', 'page_number', 'employee_name', 'employee_number', 'pay_rate', 'stub_number', 'processed_date']
     
     try:
         with open(output_file, 'w', newline='', encoding='utf-8') as csvfile:
@@ -93,6 +114,7 @@ def main():
     
     extracted_data = []
     processed_files = 0
+    total_pages = 0
     
     print(f"🔍 Processing PDFs in: {INPUT_DIR}")
     
@@ -101,14 +123,24 @@ def main():
             pdf_path = os.path.join(INPUT_DIR, filename)
             print(f"📄 Processing: {filename}")
             
-            data = extract_paystub_data(pdf_path)
-            if data:
-                extracted_data.append(data)
+            # Get data from all pages
+            page_data_list = extract_paystub_data(pdf_path)
+            
+            if page_data_list:
+                # Add all page data to our master list
+                extracted_data.extend(page_data_list)
                 processed_files += 1
-                print(f"   ✅ Employee: {data['employee_name']}")
-                print(f"   📋 Emp #: {data['employee_number']}")
-                print(f"   💰 Pay Rate: {data['pay_rate']}")
-                print(f"   🆔 Stub #: {data['stub_number']}")
+                total_pages += len(page_data_list)
+                
+                print(f"   📊 Pages processed: {len(page_data_list)}")
+                
+                # Show summary for each page
+                for page_data in page_data_list:
+                    print(f"   📄 Page {page_data['page_number']}:")
+                    print(f"      👤 Employee: {page_data['employee_name']}")
+                    print(f"      📋 Emp #: {page_data['employee_number']}")
+                    print(f"      💰 Pay Rate: {page_data['pay_rate']}")
+                    print(f"      🆔 Stub #: {page_data['stub_number']}")
             else:
                 print(f"   ❌ Failed to extract data from {filename}")
             print()
@@ -117,6 +149,8 @@ def main():
         export_to_csv(extracted_data, OUTPUT_CSV)
         print(f"\n📈 Summary:")
         print(f"   Files processed: {processed_files}")
+        print(f"   Total pages processed: {total_pages}")
+        print(f"   Total records: {len(extracted_data)}")
         print(f"   CSV location: {OUTPUT_CSV}")
     else:
         print("❌ No paystub data found to export.")
