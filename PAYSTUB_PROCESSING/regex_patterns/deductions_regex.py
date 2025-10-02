@@ -281,9 +281,132 @@ class DeductionsDataExtractor:
         return deduction_data
 
 
+def extract_tax_deductions_data_pdfplumber(text: str, page_num: int = 1) -> List[Dict[str, Any]]:
+    """
+    Extract tax deductions data from pdfplumber text format.
+    
+    pdfplumber format pattern:
+    Lines like: "Federal W/H 42.87 353.68"
+               "Social Security Tax 42.40 324.52"
+    
+    Args:
+        text: Full text content from pdfplumber
+        page_num: Page number for reference
+        
+    Returns:
+        List of tax deduction records with category, amount, ytd
+    """
+    lines = text.split('\n')
+    
+    # Find tax deductions section
+    start_idx = -1
+    end_idx = -1
+    
+    for i, line in enumerate(lines):
+        if '•••' in line and 'TAX' in line and 'DEDUCTIONS' in line:
+            start_idx = i + 1
+        elif start_idx != -1 and ('•••' in line and ('DEDUCTIONS' in line or 'DIRECT' in line)):
+            end_idx = i
+            break
+    
+    if start_idx == -1:
+        return []
+    
+    if end_idx == -1:
+        end_idx = len(lines)
+    
+    tax_deductions = []
+    
+    # pdfplumber pattern: "Category Amount YTD"
+    pdfplumber_pattern = r'^([A-Za-z][A-Za-z\s/\-\.&]+?)\s+(\d+\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
+    
+    for i in range(start_idx, end_idx):
+        line = lines[i].strip()
+        if not line or '•••' in line:
+            continue
+            
+        match = re.match(pdfplumber_pattern, line)
+        if match:
+            category = match.group(1).strip()
+            amount = float(match.group(2))
+            ytd_str = match.group(3).replace(',', '')
+            ytd = float(ytd_str)
+            
+            tax_deductions.append({
+                'category': category,
+                'amount': amount,
+                'ytd': ytd,
+                'page_number': page_num
+            })
+    
+    return tax_deductions
+
+
+def extract_deductions_data_pdfplumber(text: str, page_num: int = 1) -> List[Dict[str, Any]]:
+    """
+    Extract regular deductions data from pdfplumber text format.
+    
+    pdfplumber format pattern:
+    Lines like: "401K Employee 123.45 1234.56"
+               "Health Insurance 89.12 890.12"
+    
+    Args:
+        text: Full text content from pdfplumber
+        page_num: Page number for reference
+        
+    Returns:
+        List of deduction records with category, amount, ytd
+    """
+    lines = text.split('\n')
+    
+    # Find deductions section (after tax deductions)
+    start_idx = -1
+    end_idx = -1
+    
+    for i, line in enumerate(lines):
+        if '•••' in line and 'DEDUCTIONS' in line and 'TAX' not in line:
+            start_idx = i + 1
+        elif start_idx != -1 and ('•••' in line or 'Net' in line or 'Gross' in line):
+            end_idx = i
+            break
+    
+    if start_idx == -1:
+        return []
+    
+    if end_idx == -1:
+        end_idx = len(lines)
+    
+    deductions = []
+    
+    # pdfplumber pattern: "Category Amount YTD"
+    pdfplumber_pattern = r'^([A-Za-z][A-Za-z\s/\-\.&\(\)0-9]+?)\s+(\d+\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
+    
+    for i in range(start_idx, end_idx):
+        line = lines[i].strip()
+        if not line or '•••' in line:
+            continue
+            
+        match = re.match(pdfplumber_pattern, line)
+        if match:
+            category = match.group(1).strip()
+            amount = float(match.group(2))
+            ytd_str = match.group(3).replace(',', '')
+            ytd = float(ytd_str)
+            
+            deductions.append({
+                'category': category,
+                'amount': amount,
+                'ytd': ytd,
+                'page_number': page_num
+            })
+    
+    return deductions
+
+
 def extract_tax_deductions_data(text: str, page_num: int = 1) -> List[Dict[str, Any]]:
     """
     Main function to extract tax deductions data from paystub text using centralized patterns.
+    Prioritizes pdfplumber format detection, falls back to PyPDF2 patterns.
     
     Args:
         text: Full text content of the paystub page
@@ -292,6 +415,12 @@ def extract_tax_deductions_data(text: str, page_num: int = 1) -> List[Dict[str, 
     Returns:
         List of tax deduction records with category, amount, ytd
     """
+    # Try pdfplumber format first (more structured)
+    pdfplumber_result = extract_tax_deductions_data_pdfplumber(text, page_num)
+    if pdfplumber_result:
+        return pdfplumber_result
+    
+    # Fallback to PyPDF2 format extraction
     extractor = DeductionsDataExtractor()
     lines = text.split('\n')
     
@@ -337,6 +466,7 @@ def extract_tax_deductions_data(text: str, page_num: int = 1) -> List[Dict[str, 
 def extract_deductions_data(text: str, page_num: int = 1) -> List[Dict[str, Any]]:
     """
     Main function to extract regular deductions data from paystub text using centralized patterns.
+    Prioritizes pdfplumber format detection, falls back to PyPDF2 patterns.
     
     Args:
         text: Full text content of the paystub page
@@ -345,6 +475,12 @@ def extract_deductions_data(text: str, page_num: int = 1) -> List[Dict[str, Any]
     Returns:
         List of deduction records with category, amount, ytd
     """
+    # Try pdfplumber format first (more structured)
+    pdfplumber_result = extract_deductions_data_pdfplumber(text, page_num)
+    if pdfplumber_result:
+        return pdfplumber_result
+    
+    # Fallback to PyPDF2 format extraction
     extractor = DeductionsDataExtractor()
     lines = text.split('\n')
     
