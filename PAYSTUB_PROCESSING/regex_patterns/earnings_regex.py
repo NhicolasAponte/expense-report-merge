@@ -414,9 +414,9 @@ def extract_earnings_data_pdfplumber(text: str, page_num: int = 1) -> List[Dict[
         earnings_end = len(lines)
     
     # Pattern for pdfplumber earnings lines: "Category Hours Amount YTD"
-    # Category can have spaces, periods, hyphens
+    # Category can have spaces, periods, hyphens, and can start with numbers (e.g., "2/700", "8/900")
     # Numbers can have commas and are decimal format (including hours field)
-    earnings_pattern = r'^([A-Za-z][A-Za-z\s\-/\.()&]+?)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
+    earnings_pattern = r'^([A-Za-z0-9][A-Za-z\s\-/\.()&0-9]+?)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
     
     # Extract earnings data from the section
     for i in range(earnings_start + 1, earnings_end):
