@@ -108,6 +108,7 @@ class EmployeeDataExtractor:
     def extract_employee_name(self, text: str) -> Optional[str]:
         """
         Extract employee name from text using multiple patterns.
+        Auto-detects pdfplumber vs PyPDF2 format.
         
         Args:
             text: The text to search in
@@ -115,14 +116,27 @@ class EmployeeDataExtractor:
         Returns:
             str or None: The extracted employee name if found and valid
         """
-        # Try formatted layout first
+        lines = text.split('\n')
+        
+        # pdfplumber format detection: Look for "Name Date" pattern on line 5
+        if len(lines) >= 5:
+            line5 = lines[4].strip()  # 0-indexed, so line 5 is index 4
+            # Pattern: "Name 9/19/2025" format
+            pdfplumber_name_pattern = r'^([A-Za-z][A-Za-z\.\'\- ,]{3,60}?)\s+\d{1,2}/\d{1,2}/\d{4}$'
+            match = re.match(pdfplumber_name_pattern, line5)
+            if match:
+                candidate_name = match.group(1).strip()
+                if is_valid_name(candidate_name):
+                    return candidate_name
+        
+        # Try formatted layout (PyPDF2 format)
         match = re.search(self.patterns.NAME_FORMATTED, text)
         if match:
             candidate_name = match.group(1).strip()
             if is_valid_name(candidate_name):
                 return candidate_name
         
-        # Try compact layout
+        # Try compact layout (PyPDF2 format)
         match = re.search(self.patterns.NAME_COMPACT, text)
         if match:
             candidate_name = match.group(1).strip()
@@ -130,7 +144,6 @@ class EmployeeDataExtractor:
                 return candidate_name
         
         # Fallback heuristic: scan lines between header and "Employee Number"
-        lines = text.splitlines()
         try:
             header_end_idx = 0
             for i, ln in enumerate(lines[:10]):  # search first 10 lines for ZIP
@@ -148,13 +161,30 @@ class EmployeeDataExtractor:
         return None
     
     def extract_pay_rate(self, text: str) -> Optional[str]:
-        """Extract pay rate from text."""
-        # Try formatted layout first
+        """
+        Extract pay rate from text.
+        Auto-detects pdfplumber vs PyPDF2 format.
+        """
+        lines = text.split('\n')
+        
+        # pdfplumber format detection: Look for data line pattern
+        # Pattern: "22-ADJ ···-··-8819 20.50 HW 9/13/2025 D000123144"
+        # Updated to handle various dot/dash characters: ·, •, -, *
+        # Updated to handle mixed alphanumeric patterns like 8B1, BJL, etc.
+        pdfplumber_data_pattern = r'^[0-9]{2}-[A-Z0-9]+\s+[·•\-\*\s]+[·•\-\*]*\d+[·•\-\*\s]*(\d+\.\d+)\s+HW\s+\d{1,2}/\d{1,2}/\d{4}\s+D\d{6,}$'
+        
+        for line in lines:
+            line = line.strip()
+            match = re.match(pdfplumber_data_pattern, line)
+            if match:
+                return match.group(1)
+        
+        # Try formatted layout (PyPDF2 format)
         match = re.search(self.patterns.PAY_RATE_FORMATTED, text)
         if match:
             return match.group(1).strip()
         
-        # Try compact layout
+        # Try compact layout (PyPDF2 format)
         match = re.search(self.patterns.PAY_RATE_COMPACT, text)
         if match:
             return match.group(1).strip()
@@ -162,13 +192,30 @@ class EmployeeDataExtractor:
         return None
     
     def extract_employee_number(self, text: str) -> Optional[str]:
-        """Extract employee number from text."""
-        # Try formatted layout first
+        """
+        Extract employee number from text.
+        Auto-detects pdfplumber vs PyPDF2 format.
+        """
+        lines = text.split('\n')
+        
+        # pdfplumber format detection: Look for data line pattern
+        # Pattern: "22-ADJ ···-··-8819 20.50 HW 9/13/2025 D000123144"
+        # Updated to handle various dot/dash characters: ·, •, -, *
+        # Updated to handle mixed alphanumeric patterns like 8B1, BJL, etc.
+        pdfplumber_data_pattern = r'^([0-9]{2}-[A-Z0-9]+)\s+[·•\-\*\s]+[·•\-\*]*\d+[·•\-\*\s]*\d+\.\d+\s+HW\s+\d{1,2}/\d{1,2}/\d{4}\s+D\d{6,}$'
+        
+        for line in lines:
+            line = line.strip()
+            match = re.match(pdfplumber_data_pattern, line)
+            if match:
+                return match.group(1)
+        
+        # Try formatted layout (PyPDF2 format)
         match = re.search(self.patterns.EMPLOYEE_NUMBER_FORMATTED, text)
         if match:
             return match.group(1).strip()
         
-        # Try compact layout
+        # Try compact layout (PyPDF2 format)
         match = re.search(self.patterns.EMPLOYEE_NUMBER_COMPACT, text)
         if match:
             return match.group(1).strip()
@@ -176,15 +223,32 @@ class EmployeeDataExtractor:
         return None
     
     def extract_stub_number(self, text: str) -> Optional[str]:
-        """Extract stub number from text."""
-        # Try formatted layout first
+        """
+        Extract stub number from text.
+        Auto-detects pdfplumber vs PyPDF2 format.
+        """
+        lines = text.split('\n')
+        
+        # pdfplumber format detection: Look for data line pattern
+        # Pattern: "22-ADJ ···-··-8819 20.50 HW 9/13/2025 D000123144"
+        # Updated to handle various dot/dash characters: ·, •, -, *
+        # Updated to handle mixed alphanumeric patterns like 8B1, BJL, etc.
+        pdfplumber_data_pattern = r'^[0-9]{2}-[A-Z0-9]+\s+[·•\-\*\s]+[·•\-\*]*\d+[·•\-\*\s]*\d+\.\d+\s+HW\s+\d{1,2}/\d{1,2}/\d{4}\s+(D\d{6,})$'
+        
+        for line in lines:
+            line = line.strip()
+            match = re.match(pdfplumber_data_pattern, line)
+            if match:
+                return match.group(1)
+        
+        # Try formatted layout (PyPDF2 format)
         match = re.search(self.patterns.STUB_NUMBER_FORMATTED, text)
         if match:
             candidate = match.group(1).strip()
             if candidate.startswith('D'):
                 return candidate
         
-        # Try compact layout
+        # Try compact layout (PyPDF2 format)
         match = re.search(self.patterns.STUB_NUMBER_COMPACT, text)
         if match:
             return match.group(1).strip()
@@ -197,18 +261,35 @@ class EmployeeDataExtractor:
         return None
     
     def extract_period_end(self, text: str) -> Optional[str]:
-        """Extract period end date from text."""
-        # Try formatted layout first
+        """
+        Extract period end date from text.
+        Auto-detects pdfplumber vs PyPDF2 format.
+        """
+        lines = text.split('\n')
+        
+        # pdfplumber format detection: Look for data line pattern
+        # Pattern: "22-ADJ ···-··-8819 20.50 HW 9/13/2025 D000123144"
+        # Updated to handle various dot/dash characters: ·, •, -, *
+        # Updated to handle mixed alphanumeric patterns like 8B1, BJL, etc.
+        pdfplumber_data_pattern = r'^[0-9]{2}-[A-Z0-9]+\s+[·•\-\*\s]+[·•\-\*]*\d+[·•\-\*\s]*\d+\.\d+\s+HW\s+(\d{1,2}/\d{1,2}/\d{4})\s+D\d{6,}$'
+        
+        for line in lines:
+            line = line.strip()
+            match = re.match(pdfplumber_data_pattern, line)
+            if match:
+                return match.group(1)
+        
+        # Try formatted layout (PyPDF2 format)
         match = re.search(self.patterns.PERIOD_END_FORMATTED, text)
         if match:
             return match.group(1).strip()
         
-        # Try merged pattern
+        # Try merged pattern (PyPDF2 format)
         match = re.search(self.patterns.PERIOD_END_STUB_MERGED, text)
         if match:
             return match.group(1)  # Returns the date part
         
-        # Try compact layout
+        # Try compact layout (PyPDF2 format)
         match = re.search(self.patterns.PERIOD_END_COMPACT, text)
         if match:
             return match.group(1).strip()
