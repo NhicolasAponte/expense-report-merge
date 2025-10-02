@@ -8,6 +8,8 @@ from typing import List, Dict, Optional
 from dataclasses import field
 # Import the centralized employee regex patterns
 from regex_patterns.employee_regex import extract_employee_data_patterns
+# Import the centralized earnings regex patterns
+from regex_patterns.earnings_regex import extract_earnings_data, EarningsDataExtractor
 
 # Add parent directory to path for config import
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -122,7 +124,20 @@ class PaystubExtractor:
         """Extract items from a specific section."""
         items = []
         
-        # Find the section start
+        # Use centralized earnings extraction for earnings section
+        if section_name == 'earnings':
+            earnings_data = extract_earnings_data(text)
+            for item in earnings_data:
+                paystub_item = PaystubItem(
+                    name=item['category'],
+                    hours=float(item['hours']) if item['hours'] != '0.00' else None,
+                    amount=float(item['amount']),
+                    ytd=float(item['ytd'])
+                )
+                items.append(paystub_item)
+            return items
+        
+        # For other sections, use the original pattern-based extraction
         section_pattern = self.section_patterns.get(section_name)
         if not section_pattern:
             return items
@@ -167,15 +182,11 @@ class PaystubExtractor:
         return items
 
     def extract_summary_amounts(self, text: str) -> Dict[str, float]:
-        """Extract summary amounts from the paystub."""
-        amounts = {}
-        
-        for key, pattern in self.summary_patterns.items():
-            match = re.search(pattern, text, re.IGNORECASE)
-            if match:
-                amounts[key] = self.clean_amount(match.group(1))
-        
-        return amounts
+        """Extract summary amounts from the paystub using centralized patterns."""
+        # Use centralized earnings extractor for summary amounts
+        extractor = EarningsDataExtractor()
+        summary = extractor.extract_summary_amounts(text)
+        return summary
 
     def extract_paystub_data(self, page) -> PaystubData:
         """Extract complete paystub data from a page."""

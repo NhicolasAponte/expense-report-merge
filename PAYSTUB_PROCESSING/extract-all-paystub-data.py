@@ -21,6 +21,8 @@ import csv
 import re
 import os
 from typing import Dict, List, Tuple, Optional
+# Import the centralized earnings regex patterns
+from regex_patterns.earnings_regex import extract_earnings_data
 
 # Configuration
 INPUT_FILE = os.path.join(os.path.dirname(__file__), "test-files", "All_22_Paystubs.pdf")
@@ -229,47 +231,22 @@ def extract_data_values(lines: List[str]) -> List[Tuple[str, str]]:
     return data_pairs
 
 def extract_earnings_with_hours(lines: List[str], earnings_categories: List[str], data_pairs: List[Tuple[str, str]]) -> List[Dict[str, str]]:
-    """Extract earnings data including hours for each category."""
-    earnings_data = []
+    """Extract earnings data including hours using centralized patterns."""
+    # Reconstruct text from lines to use centralized extraction
+    text = '\n'.join(lines)
+    earnings_data = extract_earnings_data(text)
     
-    # Find Hours line to extract hours values
-    hours_values = []
-    hours_line_idx = None
+    # Convert to the format expected by this script
+    result = []
+    for item in earnings_data:
+        result.append({
+            'category': item['category'],
+            'hours': item['hours'],
+            'amount': item['amount'],
+            'ytd': item['ytd']
+        })
     
-    for i, line in enumerate(lines):
-        if line.strip() == 'Hours':
-            hours_line_idx = i
-            break
-    
-    if hours_line_idx:
-        # Extract hours from lines after Hours header
-        for i in range(hours_line_idx + 1, len(lines)):
-            line = lines[i].strip()
-            if re.match(r'^\d+\.\d{2}$', line):
-                hours_values.append(line)
-            elif line and not re.search(r'\d', line):
-                break  # Stop at non-numeric line
-            if len(hours_values) >= len(earnings_categories):
-                break
-    
-    # Pad hours_values if needed
-    while len(hours_values) < len(earnings_categories):
-        hours_values.append('0.00')
-    
-    # Combine categories with hours and amount/ytd data
-    for i, category in enumerate(earnings_categories):
-        if i < len(data_pairs):
-            amount, ytd = data_pairs[i]
-            hours = hours_values[i] if i < len(hours_values) else '0.00'
-            
-            earnings_data.append({
-                'category': category,
-                'hours': hours,
-                'amount': amount,
-                'ytd': ytd
-            })
-    
-    return earnings_data
+    return result
 
 def extract_deductions_data(categories: List[str], data_pairs: List[Tuple[str, str]], start_idx: int) -> List[Dict[str, str]]:
     """Extract deduction data (amount and YTD only) for a section."""
