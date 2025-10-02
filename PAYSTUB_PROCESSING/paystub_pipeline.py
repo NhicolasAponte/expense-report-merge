@@ -176,11 +176,19 @@ class PaystubPipeline:
         
         lines = text.split('\n')
         
-        # Pattern 1: Name and date on same line like "Dakota J. Ausmus 9/19/2025"
-        name_date_pattern = r'^([A-Za-z][A-Za-z\.\'\- ,]{3,60}?)\s+(\d{1,2}/\d{1,2}/\d{4})$'
+        # Pattern 1: Name and date on same line - enhanced to handle name suffixes and OCR errors
+        # Examples: "Dakota J. Ausmus 9/19/2025", "JoelT.Scheuerman 9/19/2025", "Lawrence Porter III 9/19/2025"
+        name_date_pattern = r'^([A-Za-z][A-Za-z\s\.\'\-,]*[A-Za-z](?:\s+(?:III|Jr\.?|Sr\.?))?)\s+(\d{1,2}/\d{1,2}/\d{4})$'
         
-        # Pattern 2: Data line like "22-ADJ ···-··-8819 20.50 HW 9/13/2025 D000123144"
-        data_line_pattern = r'^([0-9]{2}-[A-Z]+[0-9]*)\s+[·\-\s]+\d+[·\-\s]*(\d+\.\d+)\s+HW\s+(\d{1,2}/\d{1,2}/\d{4})\s+(D\d{6,})$'
+        # Fallback pattern for names with OCR errors (111 instead of III, 0. instead of O., etc.)
+        name_date_fallback_pattern = r'^([A-Za-z][A-Za-z\s\.0-9\'\-,]*[A-Za-z0-9](?:\s+(?:111|Jr\.?|Sr\.?))?)\s+(\d{1,2}/\d{1,2}/\d{4})$'
+        
+        # Pattern 2: Data line like "00-AER ···-**-0489 17.50 HW 9/13/2025 D000122839"
+        # Updated to handle various bullet characters in SSN masking and multiple department codes
+        data_line_pattern = r'^([0-9]{2}-[A-Z]+[0-9]*)\s+[·•\*\-\s]+[0-9\*\-•·]+\s+(\d+\.\d+)\s+HW\s+(\d{1,2}/\d{1,2}/\d{4})\s+(D\d{6,})$'
+        
+        # Fallback pattern for OCR errors where '00-' or '07-' becomes 'oo-' or 'o7-'
+        data_line_fallback_pattern = r'^([o0][o07]-[A-Z]+[0-9]*)\s+[·•\*\-\s]+[0-9\*\-•·]+\s+(\d+\.\d+)\s+HW\s+(\d{1,2}/\d{1,2}/\d{4})\s+(D\d{6,})$'
         
         for line in lines:
             line = line.strip()
@@ -189,10 +197,21 @@ class PaystubPipeline:
             match = re.match(name_date_pattern, line)
             if match and not employee_data['employee_name']:
                 candidate_name = match.group(1).strip()
-                # Simple name validation
-                if len(candidate_name) >= 3 and ' ' in candidate_name:
+                # Enhanced name validation - allow names with or without spaces (like JoelT.Scheuerman)
+                if len(candidate_name) >= 3 and ((' ' in candidate_name) or ('.' in candidate_name and len(candidate_name) >= 8)):
                     employee_data['employee_name'] = candidate_name
                     # Note: This date might be different from period_end
+            elif not employee_data['employee_name']:
+                # Try fallback pattern for OCR errors in names
+                fallback_match = re.match(name_date_fallback_pattern, line)
+                if fallback_match:
+                    candidate_name = fallback_match.group(1).strip()
+                    # Clean up OCR errors: 0. -> O., 111 -> III (when part of name suffix)
+                    candidate_name = re.sub(r'\b0\.', 'O.', candidate_name)
+                    candidate_name = re.sub(r'\s111$', ' III', candidate_name)
+                    # Enhanced name validation
+                    if len(candidate_name) >= 3 and ((' ' in candidate_name) or ('.' in candidate_name and len(candidate_name) >= 8)):
+                        employee_data['employee_name'] = candidate_name
             
             # Try to match the data line with employee number, pay rate, period end, stub number
             match = re.match(data_line_pattern, line)
@@ -201,6 +220,17 @@ class PaystubPipeline:
                 employee_data['pay_rate'] = match.group(2)
                 employee_data['period_end'] = match.group(3)
                 employee_data['stub_number'] = match.group(4)
+            elif not employee_data['employee_number']:
+                # Try fallback pattern for OCR errors (oo-/o7- instead of 00-/07-)
+                fallback_match = re.match(data_line_fallback_pattern, line, re.IGNORECASE)
+                if fallback_match:
+                    # Correct the OCR error: replace oo-/o7- with 00-/07-
+                    emp_num = fallback_match.group(1)
+                    emp_num_corrected = re.sub(r'^o([o07])-', r'0\1-', emp_num, flags=re.IGNORECASE)
+                    employee_data['employee_number'] = emp_num_corrected
+                    employee_data['pay_rate'] = fallback_match.group(2)
+                    employee_data['period_end'] = fallback_match.group(3)
+                    employee_data['stub_number'] = fallback_match.group(4)
         
         # Fallback patterns if the structured approach doesn't work
         if not employee_data['stub_number']:
