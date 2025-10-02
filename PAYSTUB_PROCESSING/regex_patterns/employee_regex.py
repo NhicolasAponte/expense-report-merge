@@ -69,10 +69,12 @@ class EmployeeRegexPatterns:
     # ========== EMPLOYEE NUMBER PATTERNS ==========
     
     # Pattern 1: Formatted layout - "Employee Number \n00-ANA"
-    EMPLOYEE_NUMBER_FORMATTED = r'Employee Number\s*\n([0-9]{2}-[A-Z]+)'
+    # Updated with institutional knowledge: XX-YYYY (2 digits, dash, 2-4 alphanumeric)
+    EMPLOYEE_NUMBER_FORMATTED = r'Employee Number\s*\n([0-9]{2}-[A-Z0-9]{2,4})'
     
-    # Pattern 2: Compact layout - "YTD20-XXX" format
-    EMPLOYEE_NUMBER_COMPACT = r'YTD([0-9]{2}-[A-Z]+[0-9]*)'
+    # Pattern 2: Compact layout - "YTD20-XXX" format  
+    # Updated with institutional knowledge: XX-YYYY (2 digits, dash, 2-4 alphanumeric)
+    EMPLOYEE_NUMBER_COMPACT = r'YTD([0-9]{2}-[A-Z0-9]{2,4})'
     
     # ========== STUB NUMBER PATTERNS ==========
     
@@ -169,9 +171,8 @@ class EmployeeDataExtractor:
         
         # pdfplumber format detection: Look for data line pattern
         # Pattern: "22-ADJ ···-··-8819 20.50 HW 9/13/2025 D000123144"
-        # Updated to handle various dot/dash characters: ·, •, -, *
-        # Updated to handle mixed alphanumeric patterns like 8B1, BJL, etc.
-        pdfplumber_data_pattern = r'^[0-9]{2}-[A-Z0-9]+\s+[·•\-\*\s]+[·•\-\*]*\d+[·•\-\*\s]*(\d+\.\d+)\s+HW\s+\d{1,2}/\d{1,2}/\d{4}\s+D\d{6,}$'
+        # Updated with institutional knowledge: XX-YYYY (2 digits, dash, 2-4 alphanumeric)
+        pdfplumber_data_pattern = r'^[0-9]{2}-[A-Z0-9]{2,4}\s+[·•\-\*\s]+[·•\-\*]*\d+[·•\-\*\s]*(\d+\.\d+)\s+HW\s+\d{1,2}/\d{1,2}/\d{4}\s+D\d{6,}$'
         
         for line in lines:
             line = line.strip()
@@ -195,14 +196,15 @@ class EmployeeDataExtractor:
         """
         Extract employee number from text.
         Auto-detects pdfplumber vs PyPDF2 format.
+        Format: XX-YYYY where XX=2 digits, YYYY=2-4 alphanumeric characters
+        Examples: 00-AN, 10-MC2, 22-MKH1, 20-MKFR
         """
         lines = text.split('\n')
         
         # pdfplumber format detection: Look for data line pattern
         # Pattern: "22-ADJ ···-··-8819 20.50 HW 9/13/2025 D000123144"
-        # Updated to handle various dot/dash characters: ·, •, -, *
-        # Updated to handle mixed alphanumeric patterns like 8B1, BJL, etc.
-        pdfplumber_data_pattern = r'^([0-9]{2}-[A-Z0-9]+)\s+[·•\-\*\s]+[·•\-\*]*\d+[·•\-\*\s]*\d+\.\d+\s+HW\s+\d{1,2}/\d{1,2}/\d{4}\s+D\d{6,}$'
+        # Updated with institutional knowledge: XX-YYYY (2 digits, dash, 2-4 alphanumeric)
+        pdfplumber_data_pattern = r'^([0-9]{2}-[A-Z0-9]{2,4})\s+[·•\-\*\s]+[·•\-\*]*\d+[·•\-\*\s]*\d+\.\d+\s+HW\s+\d{1,2}/\d{1,2}/\d{4}\s+D\d{6,}$'
         
         for line in lines:
             line = line.strip()
@@ -231,9 +233,8 @@ class EmployeeDataExtractor:
         
         # pdfplumber format detection: Look for data line pattern
         # Pattern: "22-ADJ ···-··-8819 20.50 HW 9/13/2025 D000123144"
-        # Updated to handle various dot/dash characters: ·, •, -, *
-        # Updated to handle mixed alphanumeric patterns like 8B1, BJL, etc.
-        pdfplumber_data_pattern = r'^[0-9]{2}-[A-Z0-9]+\s+[·•\-\*\s]+[·•\-\*]*\d+[·•\-\*\s]*\d+\.\d+\s+HW\s+\d{1,2}/\d{1,2}/\d{4}\s+(D\d{6,})$'
+        # Updated with institutional knowledge: XX-YYYY (2 digits, dash, 2-4 alphanumeric)
+        pdfplumber_data_pattern = r'^[0-9]{2}-[A-Z0-9]{2,4}\s+[·•\-\*\s]+[·•\-\*]*\d+[·•\-\*\s]*\d+\.\d+\s+HW\s+\d{1,2}/\d{1,2}/\d{4}\s+(D\d{6,})$'
         
         for line in lines:
             line = line.strip()
@@ -269,9 +270,8 @@ class EmployeeDataExtractor:
         
         # pdfplumber format detection: Look for data line pattern
         # Pattern: "22-ADJ ···-··-8819 20.50 HW 9/13/2025 D000123144"
-        # Updated to handle various dot/dash characters: ·, •, -, *
-        # Updated to handle mixed alphanumeric patterns like 8B1, BJL, etc.
-        pdfplumber_data_pattern = r'^[0-9]{2}-[A-Z0-9]+\s+[·•\-\*\s]+[·•\-\*]*\d+[·•\-\*\s]*\d+\.\d+\s+HW\s+(\d{1,2}/\d{1,2}/\d{4})\s+D\d{6,}$'
+        # Updated with institutional knowledge: XX-YYYY (2 digits, dash, 2-4 alphanumeric)
+        pdfplumber_data_pattern = r'^[0-9]{2}-[A-Z0-9]{2,4}\s+[·•\-\*\s]+[·•\-\*]*\d+[·•\-\*\s]*\d+\.\d+\s+HW\s+(\d{1,2}/\d{1,2}/\d{4})\s+D\d{6,}$'
         
         for line in lines:
             line = line.strip()
