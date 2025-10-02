@@ -396,9 +396,13 @@ def extract_earnings_data_pdfplumber(text: str, page_num: int = 1) -> List[Dict[
     
     for i, line in enumerate(lines):
         line_stripped = line.strip()
-        if 'EARNINGS' in line_stripped and earnings_start == -1:
+        # Look for earnings section start - both bullet and asterisk formats
+        if ('•••EARNINGS•••' in line_stripped or '••• EARNINGS •••' in line_stripped or 
+            '***EARNINGS***' in line_stripped or '*** EARNINGS ***' in line_stripped) and earnings_start == -1:
             earnings_start = i
-        elif earnings_start != -1 and ('TAX DEDUCTIONS' in line_stripped or 'DEDUCTIONS' in line_stripped):
+        elif earnings_start != -1 and ('TAX DEDUCTIONS' in line_stripped or 
+                                     ('***' in line_stripped and 'DEDUCTIONS' in line_stripped) or
+                                     ('•••' in line_stripped and 'DEDUCTIONS' in line_stripped)):
             earnings_end = i
             break
     
@@ -410,15 +414,15 @@ def extract_earnings_data_pdfplumber(text: str, page_num: int = 1) -> List[Dict[
     
     # Pattern for pdfplumber earnings lines: "Category Hours Amount YTD"
     # Category can have spaces, periods, hyphens
-    # Numbers can have commas and are decimal format
-    earnings_pattern = r'^([A-Za-z][A-Za-z\s\-/\.()&]+?)\s+(\d+\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
+    # Numbers can have commas and are decimal format (including hours field)
+    earnings_pattern = r'^([A-Za-z][A-Za-z\s\-/\.()&]+?)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
     
     # Extract earnings data from the section
     for i in range(earnings_start + 1, earnings_end):
         line = lines[i].strip()
         
-        # Skip empty lines and section headers
-        if not line or '•' in line or '*' in line:
+        # Skip empty lines and section headers (be more specific about asterisk patterns)
+        if not line or line.startswith('•••') or line.startswith('***') or line.endswith('•••') or line.endswith('***'):
             continue
         
         # Try to match the earnings pattern
