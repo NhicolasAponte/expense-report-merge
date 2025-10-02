@@ -26,6 +26,9 @@ from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass
 import argparse
 
+# Import common utilities
+from common_utils import get_pdf_path, setup_output_directory, get_pdf_filename_without_extension
+
 # Import our centralized regex patterns
 from regex_patterns.employee_regex import extract_employee_data_patterns
 from regex_patterns.earnings_regex import extract_earnings_data
@@ -407,8 +410,8 @@ def main():
     parser.add_argument(
         "input_pdf", 
         nargs="?",
-        default=os.path.join(os.path.dirname(__file__), "test-files", "All_22_Paystubs.pdf"),
-        help="Path to input PDF file"
+        default=None,
+        help="Path to input PDF file (auto-detects from test-files/ if not provided)"
     )
     parser.add_argument(
         "--output-dir", 
@@ -418,14 +421,16 @@ def main():
     
     args = parser.parse_args()
     
-    # Validate input file
-    if not os.path.exists(args.input_pdf):
-        print(f"Error: Input file not found: {args.input_pdf}")
-        sys.exit(1)
-    
     try:
+        # Get PDF path using utility function
+        pdf_path = get_pdf_path(args.input_pdf)
+        print(f"Using PDF: {pdf_path}")
+        
+        # Set up output directory
+        output_dir = setup_output_directory(args.output_dir)
+        
         # Create and run pipeline
-        pipeline = PaystubPipeline(args.input_pdf, args.output_dir)
+        pipeline = PaystubPipeline(pdf_path, output_dir)
         csv_files = pipeline.run()
         
         print(f"\nPipeline completed successfully!")

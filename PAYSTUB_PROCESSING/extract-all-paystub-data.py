@@ -27,7 +27,7 @@ from regex_patterns.earnings_regex import extract_earnings_data
 from regex_patterns.deductions_regex import extract_tax_deductions_data, extract_deductions_data
 
 # Configuration
-INPUT_FILE = os.path.join(os.path.dirname(__file__), "test-files", "All_22_Paystubs.pdf")
+INPUT_FILE = os.path.join(os.path.dirname(__file__), "test-files", "All_20_Paystubs.pdf")
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "result-files")
 
 def _is_valid_name(name: str) -> bool:

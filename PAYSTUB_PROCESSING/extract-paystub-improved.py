@@ -21,7 +21,7 @@ import os
 from typing import Dict, List, Tuple, Optional
 
 # Configuration
-INPUT_FILE = os.path.join(os.path.dirname(__file__), "test-files", "All_22_Paystubs.pdf")
+INPUT_FILE = os.path.join(os.path.dirname(__file__), "test-files", "All_20_Paystubs.pdf")
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "result-files")
 
 def _is_valid_name(name: str) -> bool:

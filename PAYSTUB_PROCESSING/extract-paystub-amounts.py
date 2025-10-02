@@ -10,7 +10,7 @@ from regex_patterns.earnings_regex import extract_earnings_data
 
 # Reusable path variables
 TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "test-files")
-INPUT_FILE = os.path.join(TEST_FILES_DIR, "All_22_Paystubs.pdf")
+INPUT_FILE = os.path.join(TEST_FILES_DIR, "All_20_Paystubs.pdf")
 OUTPUT_CSV = os.path.join(os.path.dirname(__file__), "result-files", "earnings.csv")
 
 def extract_employee_data_from_page(text):
