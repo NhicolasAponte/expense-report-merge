@@ -10,6 +10,8 @@ from dataclasses import field
 from regex_patterns.employee_regex import extract_employee_data_patterns
 # Import the centralized earnings regex patterns
 from regex_patterns.earnings_regex import extract_earnings_data, EarningsDataExtractor
+# Import the centralized deductions regex patterns
+from regex_patterns.deductions_regex import extract_tax_deductions_data, extract_deductions_data
 
 # Add parent directory to path for config import
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -131,6 +133,32 @@ class PaystubExtractor:
                 paystub_item = PaystubItem(
                     name=item['category'],
                     hours=float(item['hours']) if item['hours'] != '0.00' else None,
+                    amount=float(item['amount']),
+                    ytd=float(item['ytd'])
+                )
+                items.append(paystub_item)
+            return items
+        
+        # Use centralized deductions extraction for tax deductions section
+        elif section_name == 'tax_deductions':
+            tax_deductions_data = extract_tax_deductions_data(text)
+            for item in tax_deductions_data:
+                paystub_item = PaystubItem(
+                    name=item['category'],
+                    hours=None,  # Deductions don't have hours
+                    amount=float(item['amount']),
+                    ytd=float(item['ytd'])
+                )
+                items.append(paystub_item)
+            return items
+        
+        # Use centralized deductions extraction for deductions section
+        elif section_name == 'deductions':
+            deductions_data = extract_deductions_data(text)
+            for item in deductions_data:
+                paystub_item = PaystubItem(
+                    name=item['category'],
+                    hours=None,  # Deductions don't have hours
                     amount=float(item['amount']),
                     ytd=float(item['ytd'])
                 )

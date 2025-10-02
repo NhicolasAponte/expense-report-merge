@@ -23,6 +23,8 @@ import os
 from typing import Dict, List, Tuple, Optional
 # Import the centralized earnings regex patterns
 from regex_patterns.earnings_regex import extract_earnings_data
+# Import the centralized deductions regex patterns
+from regex_patterns.deductions_regex import extract_tax_deductions_data, extract_deductions_data
 
 # Configuration
 INPUT_FILE = os.path.join(os.path.dirname(__file__), "test-files", "All_22_Paystubs.pdf")
@@ -248,7 +250,7 @@ def extract_earnings_with_hours(lines: List[str], earnings_categories: List[str]
     
     return result
 
-def extract_deductions_data(categories: List[str], data_pairs: List[Tuple[str, str]], start_idx: int) -> List[Dict[str, str]]:
+def extract_deductions_data_local(categories: List[str], data_pairs: List[Tuple[str, str]], start_idx: int) -> List[Dict[str, str]]:
     """Extract deduction data (amount and YTD only) for a section."""
     deduction_data = []
     
@@ -305,10 +307,10 @@ def process_pdf_page(page, page_num: int, filename: str) -> Tuple[List[Dict], Li
         deductions_start_idx = tax_start_idx + len(tax_categories)
         
         # Extract tax deductions data
-        tax_data = extract_deductions_data(tax_categories, data_pairs, tax_start_idx)
+        tax_data = extract_deductions_data_local(tax_categories, data_pairs, tax_start_idx)
         
         # Extract deductions data
-        deductions_data = extract_deductions_data(deduction_categories, data_pairs, deductions_start_idx)
+        deductions_data = extract_deductions_data_local(deduction_categories, data_pairs, deductions_start_idx)
         
         # Add page and employee info to all records
         base_info = {
