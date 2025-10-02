@@ -14,13 +14,13 @@ from typing import Dict, List, Tuple, Optional, Any
 class DeductionsRegexPatterns:
     """Centralized container for all deductions-related regex patterns."""
     
-    # Section boundary patterns
-    TAX_DEDUCTIONS_SECTION_START = r'•••\s*TAX\s+DEDUCTIONS\s*•••|TAX DEDUCTIONS'
-    TAX_DEDUCTIONS_SECTION_END = r'[•\*]{3}\s*DEDUCTIONS\s*[•\*]{3}|(?<!TAX\s)DEDUCTIONS'
+    # Section boundary patterns - includes mixed bullet/asterisk patterns
+    TAX_DEDUCTIONS_SECTION_START = r'[•\*]{3}\s*TAX\s+DEDUCTIONS\s*[•\*]{3}|\*{3}\s*TAX\s+DEDUCTIONS\s*•{3}|•{3}\s*TAX\s+DEDUCTIONS\s*\*{3}|TAX DEDUCTIONS'
+    TAX_DEDUCTIONS_SECTION_END = r'[•\*]{3}\s*DEDUCTIONS\s*[•\*]{3}|\*{3}\s*DEDUCTIONS\s*•{3}|•{3}\s*DEDUCTIONS\s*\*{3}|(?<!TAX\s)DEDUCTIONS'
     
-    # Section start pattern for regular deductions (after tax deductions)
-    DEDUCTIONS_SECTION_START = r'[•\*]{3}\s*DEDUCTIONS\s*[•\*]{3}|(?<!TAX\s)DEDUCTIONS'
-    DEDUCTIONS_SECTION_END = r'[•\*]{3}\s*DIRECT\s+DEPOSITS\s*[•\*]{3}|DIRECT DEPOSITS'
+    # Section start pattern for regular deductions (after tax deductions) - includes mixed patterns
+    DEDUCTIONS_SECTION_START = r'[•\*]{3}\s*DEDUCTIONS\s*[•\*]{3}|\*{3}\s*DEDUCTIONS\s*•{3}|•{3}\s*DEDUCTIONS\s*\*{3}|(?<!TAX\s)DEDUCTIONS'
+    DEDUCTIONS_SECTION_END = r'[•\*]{3}\s*DIRECT\s+DEPOSITS\s*[•\*]{3}|\*{3}\s*DIRECT\s+DEPOSITS\s*•{3}|•{3}\s*DIRECT\s+DEPOSITS\s*\*{3}|DIRECT DEPOSITS'
     
     # Alternative section patterns (without bullet decorations)
     SIMPLE_TAX_DEDUCTIONS_START = r'^TAX DEDUCTIONS$'
@@ -304,12 +304,13 @@ def extract_tax_deductions_data_pdfplumber(text: str, page_num: int = 1) -> List
     end_idx = -1
     
     for i, line in enumerate(lines):
-        if ('•••' in line or '***' in line) and 'TAX' in line and 'DEDUCTIONS' in line:
+        # Check for TAX DEDUCTIONS section start - handle mixed bullet/asterisk patterns
+        if (('•••' in line or '***' in line or ('***' in line and '•••' in line) or ('•••' in line and '***' in line)) and 'TAX' in line and 'DEDUCTIONS' in line):
             start_idx = i + 1
-        elif start_idx != -1 and (('•••' in line or '***' in line) and 'DEDUCTIONS' in line and 'TAX' not in line):
+        elif start_idx != -1 and (('•••' in line or '***' in line or ('***' in line and '•••' in line) or ('•••' in line and '***' in line)) and 'DEDUCTIONS' in line and 'TAX' not in line):
             end_idx = i
             break
-        elif start_idx != -1 and (('•••' in line or '***' in line) and 'DIRECT' in line):
+        elif start_idx != -1 and (('•••' in line or '***' in line or ('***' in line and '•••' in line) or ('•••' in line and '***' in line)) and 'DIRECT' in line):
             end_idx = i
             break
     
@@ -369,12 +370,11 @@ def extract_deductions_data_pdfplumber(text: str, page_num: int = 1) -> List[Dic
     end_idx = -1
     
     for i, line in enumerate(lines):
-        # Look for deductions section start with either ••• or *** patterns
-        if (('•••' in line or '***' in line) and 'DEDUCTIONS' in line and 'TAX' not in line):
+        # Look for deductions section start with ••• or *** or mixed patterns
+        if (('•••' in line or '***' in line or ('***' in line and '•••' in line) or ('•••' in line and '***' in line)) and 'DEDUCTIONS' in line and 'TAX' not in line):
             start_idx = i + 1
-        elif start_idx != -1 and (('•••' in line and ('DIRECT' in line or 'Net' in line or 'Gross' in line)) or 'DIRECT DEPOSITS' in line):
+        elif start_idx != -1 and ((('•••' in line or '***' in line or ('***' in line and '•••' in line) or ('•••' in line and '***' in line)) and ('DIRECT' in line or 'Net' in line or 'Gross' in line)) or 'DIRECT DEPOSITS' in line):
             end_idx = i
-            break
             break
     
     if start_idx == -1:
