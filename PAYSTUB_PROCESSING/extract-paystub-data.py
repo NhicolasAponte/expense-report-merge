@@ -7,7 +7,7 @@ from PyPDF2 import PdfReader
 # Reusable path variables
 TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "test-files")
 INPUT_DIR = TEST_FILES_DIR
-OUTPUT_CSV = os.path.join(TEST_FILES_DIR, "paystub_data.csv")
+OUTPUT_CSV = os.path.join(os.path.dirname(__file__), "result-files", "paystub_data.csv")
 
 def extract_paystub_data_from_page(text, filename, page_num):
     """Extract employee data from a single page of text"""

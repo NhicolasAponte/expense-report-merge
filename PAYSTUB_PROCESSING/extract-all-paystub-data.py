@@ -23,8 +23,8 @@ import os
 from typing import Dict, List, Tuple, Optional
 
 # Configuration
-INPUT_FILE = r"C:\Users\nflores\Projects\pdf-apps\expense-report-merge\test-files\All_22_Paystubs.pdf"
-OUTPUT_DIR = r"C:\Users\nflores\Projects\pdf-apps\expense-report-merge\test-files"
+INPUT_FILE = os.path.join(os.path.dirname(__file__), "test-files", "All_22_Paystubs.pdf")
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "result-files")
 
 def _is_valid_name(name: str) -> bool:
     """Check if a string looks like a valid employee name."""

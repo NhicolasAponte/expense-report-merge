@@ -21,8 +21,8 @@ import os
 from typing import Dict, List, Tuple, Optional
 
 # Configuration
-INPUT_FILE = r"C:\Users\nflores\Projects\pdf-apps\expense-report-merge\test-files\All_22_Paystubs.pdf"
-OUTPUT_DIR = r"C:\Users\nflores\Projects\pdf-apps\expense-report-merge\test-files"
+INPUT_FILE = os.path.join(os.path.dirname(__file__), "test-files", "All_22_Paystubs.pdf")
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "result-files")
 
 def _is_valid_name(name: str) -> bool:
     """Check if a string looks like a valid employee name."""
@@ -135,6 +135,98 @@ def extract_earnings_categories(lines: List[str]) -> List[str]:
             break
         elif in_earnings and line_clean and not any(char in line for char in ['•', '�', '*']):
             categories.append(line_clean)
+    
+    return categories
+
+def extract_tax_deductions_categories(lines: List[str]) -> List[str]:
+    """Extract tax deductions category names."""
+    categories = []
+    in_tax_deductions = False
+    
+    # Common tax deduction patterns
+    valid_patterns = [
+        r'Federal W/H',
+        r'Social Security Tax',
+        r'Medicare Tax',
+        r'IAStateW/H',
+        r'Aflac\s+\w+',
+        r'401\s*K\s+[\w\s]+',
+        r'Life Insurance',
+        r'Vision\s*[\w\s]*',
+        r'Dental\s+[\w\s]+',
+        r'Health\s+[\w\s]+',
+        r'Child Support',
+        r'^\w+\s*(Bank|CU|Credit Union)',
+        r'^\w+\s+State\s*$',
+        r'Green\s*State',
+        r'Community\s+[\w\s]+',
+    ]
+    
+    for line in lines:
+        line_clean = line.strip()
+        
+        if 'TAX DEDUCTIONS' in line:
+            in_tax_deductions = True
+            continue
+        elif in_tax_deductions and (line_clean.startswith('DEDUCTIONS') and 'TAX' not in line):
+            break
+        elif in_tax_deductions and line_clean:
+            # Only include if it matches known tax deduction patterns
+            if any(re.search(pattern, line_clean, re.IGNORECASE) for pattern in valid_patterns):
+                categories.append(line_clean)
+    
+    return categories
+
+def extract_deductions_categories(lines: List[str]) -> List[str]:
+    """Extract deductions category names."""
+    categories = []
+    in_deductions = False
+    
+    # Common deduction patterns (non-tax) - more general patterns
+    valid_patterns = [
+        r'^\w+\s*(Bank|CU|Credit Union)',
+        r'Loan\s+[\w\s]*',
+        r'Savings\s+[\w\s]*',
+        r'Union\s+Dues',
+        r'Parking',
+        r'Uniform',
+        r'Tool\s+[\w\s]*',
+        r'Garnishment',
+        r'Charity',
+        r'United Way',
+        r'Wells\s+Fargo',
+        r'Chase',
+        r'Bank\s+of\s+',
+        r'US\s+Bank',
+        r'Capital\s+One',
+        r'Bankers\s+Trust',
+        r'Green\s*State',
+        r'Community\s+',
+        r'Journey\s+Credit',
+        r'Veridian',
+        r'DUPACO',
+        r'Premier\s+',
+        r'Marine\s+Credit',
+        r'Greater\s+Iowa',
+        r'First\s+Interstate',
+        r'Stride\s+Bank',
+        r'BMO',
+        r'Chime',
+        r'Cashapp'
+    ]
+    
+    for line in lines:
+        line_clean = line.strip()
+        
+        if line_clean.startswith('DEDUCTIONS') and 'TAX' not in line:
+            in_deductions = True
+            continue
+        elif in_deductions and ('NET PAY' in line or 'DIRECT DEPOSITS' in line):
+            break
+        elif in_deductions and line_clean:
+            # Only include if it matches known deduction patterns
+            if any(re.search(pattern, line_clean, re.IGNORECASE) for pattern in valid_patterns):
+                categories.append(line_clean)
     
     return categories
 
@@ -373,13 +465,148 @@ def process_earnings_page(page, page_num: int, filename: str) -> List[Dict]:
         print(f"   ERROR Page {page_num}: {str(e)}")
         return []
 
-def export_to_csv(data: List[Dict], filename: str):
-    """Export earnings data to CSV file."""
+def process_tax_deductions_page(page, page_num: int, filename: str) -> List[Dict]:
+    """Process a single PDF page and extract tax deductions data."""
+    try:
+        text = page.extract_text()
+        if not text.strip():
+            return []
+        
+        lines = text.split('\n')
+        
+        # Extract employee data
+        employee_data = extract_employee_data_from_page(lines)
+        
+        # Extract tax deductions categories
+        tax_deductions_categories = extract_tax_deductions_categories(lines)
+        
+        if not tax_deductions_categories:
+            return []
+        
+        print(f"   Page {page_num}: Found {len(tax_deductions_categories)} tax deduction categories: {tax_deductions_categories}")
+        
+        # Detect layout pattern
+        layout = detect_layout_pattern(lines)
+        
+        # Extract amount/YTD based on layout
+        if layout == 'Layout A':
+            amount_ytd_pairs = extract_layout_a_data(lines, len(tax_deductions_categories))
+        elif layout == 'Layout B':
+            amount_ytd_pairs = extract_layout_b_data(lines, len(tax_deductions_categories))
+        elif layout == 'Layout C':
+            amount_ytd_pairs = extract_layout_c_data(lines, len(tax_deductions_categories))
+        else:
+            return []
+        
+        if not amount_ytd_pairs:
+            return []
+        
+        # Create tax deductions records
+        tax_deductions_data = []
+        base_info = {
+            'filename': filename,
+            'page_number': str(page_num),
+            'employee_name': employee_data['employee_name'],
+            'employee_number': employee_data['employee_number'],
+            'period_end': employee_data['period_end']
+        }
+        
+        for i, category in enumerate(tax_deductions_categories):
+            amount, ytd = amount_ytd_pairs[i] if i < len(amount_ytd_pairs) else ('0.00', '0.00')
+            
+            record = {
+                'category': category,
+                'amount': amount,
+                'ytd': ytd
+            }
+            record.update(base_info)
+            tax_deductions_data.append(record)
+            
+            print(f"   {category}: Amount={amount}, YTD={ytd}")
+        
+        print(f"   SUCCESS Page {page_num}: {len(tax_deductions_data)} tax deduction records extracted")
+        return tax_deductions_data
+        
+    except Exception as e:
+        print(f"   ERROR Page {page_num} tax deductions: {str(e)}")
+        return []
+
+def process_deductions_page(page, page_num: int, filename: str) -> List[Dict]:
+    """Process a single PDF page and extract deductions data."""
+    try:
+        text = page.extract_text()
+        if not text.strip():
+            return []
+        
+        lines = text.split('\n')
+        
+        # Extract employee data
+        employee_data = extract_employee_data_from_page(lines)
+        
+        # Extract deductions categories
+        deductions_categories = extract_deductions_categories(lines)
+        
+        if not deductions_categories:
+            return []
+        
+        print(f"   Page {page_num}: Found {len(deductions_categories)} deduction categories: {deductions_categories}")
+        
+        # Detect layout pattern
+        layout = detect_layout_pattern(lines)
+        
+        # Extract amount/YTD based on layout
+        if layout == 'Layout A':
+            amount_ytd_pairs = extract_layout_a_data(lines, len(deductions_categories))
+        elif layout == 'Layout B':
+            amount_ytd_pairs = extract_layout_b_data(lines, len(deductions_categories))
+        elif layout == 'Layout C':
+            amount_ytd_pairs = extract_layout_c_data(lines, len(deductions_categories))
+        else:
+            return []
+        
+        if not amount_ytd_pairs:
+            return []
+        
+        # Create deductions records
+        deductions_data = []
+        base_info = {
+            'filename': filename,
+            'page_number': str(page_num),
+            'employee_name': employee_data['employee_name'],
+            'employee_number': employee_data['employee_number'],
+            'period_end': employee_data['period_end']
+        }
+        
+        for i, category in enumerate(deductions_categories):
+            amount, ytd = amount_ytd_pairs[i] if i < len(amount_ytd_pairs) else ('0.00', '0.00')
+            
+            record = {
+                'category': category,
+                'amount': amount,
+                'ytd': ytd
+            }
+            record.update(base_info)
+            deductions_data.append(record)
+            
+            print(f"   {category}: Amount={amount}, YTD={ytd}")
+        
+        print(f"   SUCCESS Page {page_num}: {len(deductions_data)} deduction records extracted")
+        return deductions_data
+        
+    except Exception as e:
+        print(f"   ERROR Page {page_num} deductions: {str(e)}")
+        return []
+
+def export_to_csv(data: List[Dict], filename: str, data_type: str = 'earnings'):
+    """Export data to CSV file."""
     if not data:
-        print(f"WARNING No earnings data to export.")
+        print(f"WARNING No {data_type} data to export.")
         return
     
-    headers = ['filename', 'page_number', 'employee_name', 'employee_number', 'period_end', 'category', 'hours', 'amount', 'ytd']
+    if data_type == 'earnings':
+        headers = ['filename', 'page_number', 'employee_name', 'employee_number', 'period_end', 'category', 'hours', 'amount', 'ytd']
+    else:
+        headers = ['filename', 'page_number', 'employee_name', 'employee_number', 'period_end', 'category', 'amount', 'ytd']
     
     try:
         output_path = os.path.join(OUTPUT_DIR, filename)
@@ -388,21 +615,23 @@ def export_to_csv(data: List[Dict], filename: str):
             writer.writeheader()
             writer.writerows(data)
         
-        print(f"SUCCESS Earnings data exported to: {output_path}")
+        print(f"SUCCESS {data_type.title()} data exported to: {output_path}")
         print(f"Records exported: {len(data)}")
         
     except Exception as e:
-        print(f"ERROR writing CSV file: {str(e)}")
+        print(f"ERROR writing {data_type} CSV file: {str(e)}")
 
 def main():
-    """Main function to process PDF and extract improved earnings data."""
-    print(f"Extracting improved earnings data from: {INPUT_FILE}")
+    """Main function to process PDF and extract all paystub data."""
+    print(f"Extracting comprehensive paystub data from: {INPUT_FILE}")
     
     if not os.path.exists(INPUT_FILE):
         print(f"ERROR Input file not found: {INPUT_FILE}")
         return
     
     all_earnings_data = []
+    all_tax_deductions_data = []
+    all_deductions_data = []
     
     try:
         with open(INPUT_FILE, 'rb') as file:
@@ -415,29 +644,51 @@ def main():
             for page_num in range(1, len(reader.pages) + 1):
                 try:
                     page = reader.pages[page_num - 1]
+                    
+                    # Extract earnings data
                     earnings_data = process_earnings_page(page, page_num, filename)
                     all_earnings_data.extend(earnings_data)
+                    
+                    # Extract tax deductions data
+                    tax_deductions_data = process_tax_deductions_page(page, page_num, filename)
+                    all_tax_deductions_data.extend(tax_deductions_data)
+                    
+                    # Extract deductions data
+                    deductions_data = process_deductions_page(page, page_num, filename)
+                    all_deductions_data.extend(deductions_data)
                     
                 except Exception as page_error:
                     print(f"   ERROR Page {page_num}: {str(page_error)}")
                     print(f"   Skipping page {page_num} and continuing...")
                     continue
         
-        # Export to CSV
-        export_to_csv(all_earnings_data, 'earnings_improved.csv')
+        # Export all data to CSV files
+        export_to_csv(all_earnings_data, 'earnings_improved.csv', 'earnings')
+        export_to_csv(all_tax_deductions_data, 'tax_deductions_improved.csv', 'tax deductions')
+        export_to_csv(all_deductions_data, 'deductions_improved.csv', 'deductions')
         
         # Print summary
         print(f"\nSummary:")
         print(f"   Pages processed: {len(reader.pages)}")
         print(f"   Earnings records: {len(all_earnings_data)}")
+        print(f"   Tax deductions records: {len(all_tax_deductions_data)}")
+        print(f"   Deductions records: {len(all_deductions_data)}")
         
+        # Print category summaries
         if all_earnings_data:
-            categories = sorted(set(record['category'] for record in all_earnings_data))
-            print(f"   Unique categories: {len(categories)}")
-            print(f"   Categories: {categories}")
+            earnings_categories = sorted(set(record['category'] for record in all_earnings_data))
+            print(f"   Earnings categories ({len(earnings_categories)}): {earnings_categories}")
+        
+        if all_tax_deductions_data:
+            tax_categories = sorted(set(record['category'] for record in all_tax_deductions_data))
+            print(f"   Tax deduction categories ({len(tax_categories)}): {tax_categories}")
+        
+        if all_deductions_data:
+            deduction_categories = sorted(set(record['category'] for record in all_deductions_data))
+            print(f"   Deduction categories ({len(deduction_categories)}): {deduction_categories}")
         
         print(f"\nProcessing complete!")
-        print(f"CSV file: {os.path.join(OUTPUT_DIR, 'earnings_improved.csv')}")
+        print(f"CSV files created in: {OUTPUT_DIR}")
         
     except Exception as e:
         print(f"ERROR processing PDF: {str(e)}")

@@ -1,10 +1,14 @@
 import os
 import re
 import json
+import sys
 import pdfplumber
 from dataclasses import dataclass, asdict
 from typing import List, Dict, Optional
 from dataclasses import field
+
+# Add parent directory to path for config import
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from config import LOCAL_DESKTOP_TEMP
 
 # Reusable path variables

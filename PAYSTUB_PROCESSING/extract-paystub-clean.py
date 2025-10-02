@@ -165,10 +165,13 @@ def main():
     print(f"\nTotal paystubs extracted: {len(all_paystub_data)}")
     
     if all_paystub_data:
+        # Create result-files directory path
+        result_dir = os.path.join(os.path.dirname(__file__), "result-files")
+        
         # Create CSV files
-        create_earnings_csv(all_paystub_data, "clean_earnings.csv")
-        create_tax_deductions_csv(all_paystub_data, "clean_tax_deductions.csv")
-        create_summary_csv(all_paystub_data, "clean_summary.csv")
+        create_earnings_csv(all_paystub_data, os.path.join(result_dir, "clean_earnings.csv"))
+        create_tax_deductions_csv(all_paystub_data, os.path.join(result_dir, "clean_tax_deductions.csv"))
+        create_summary_csv(all_paystub_data, os.path.join(result_dir, "clean_summary.csv"))
         
         print(f"\nGenerated CSV files:")
         print(f"  - clean_earnings.csv")
