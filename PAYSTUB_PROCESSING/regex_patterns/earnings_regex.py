@@ -396,9 +396,10 @@ def extract_earnings_data_pdfplumber(text: str, page_num: int = 1) -> List[Dict[
     
     for i, line in enumerate(lines):
         line_stripped = line.strip()
-        # Look for earnings section start - both bullet and asterisk formats
-        if ('•••EARNINGS•••' in line_stripped or '••• EARNINGS •••' in line_stripped or 
-            '***EARNINGS***' in line_stripped or '*** EARNINGS ***' in line_stripped) and earnings_start == -1:
+        # Look for earnings section start - handle all format variations including mixed patterns
+        if (('•••EARNINGS•••' in line_stripped or '••• EARNINGS •••' in line_stripped or 
+             '***EARNINGS***' in line_stripped or '*** EARNINGS ***' in line_stripped or
+             '***EARNINGS•••' in line_stripped or '•••EARNINGS***' in line_stripped) and earnings_start == -1):
             earnings_start = i
         elif earnings_start != -1 and ('TAX DEDUCTIONS' in line_stripped or 
                                      ('***' in line_stripped and 'DEDUCTIONS' in line_stripped) or
