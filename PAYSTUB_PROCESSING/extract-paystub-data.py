@@ -4,190 +4,21 @@ import re
 from datetime import datetime
 from PyPDF2 import PdfReader
 
+# Import the centralized regex patterns
+from regex_patterns.employee_regex import extract_employee_data_patterns
+
 # Reusable path variables
 TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "test-files")
 INPUT_DIR = TEST_FILES_DIR
 OUTPUT_CSV = os.path.join(os.path.dirname(__file__), "result-files", "paystub_data.csv")
 
 def extract_paystub_data_from_page(text, filename, page_num):
-    """Extract employee data from a single page of text"""
-    # Initialize data dictionary
-    data = {
-        'filename': filename,
-        'page_number': page_num,
-        'employee_name': '',
-        'employee_number': '',
-        'pay_rate': '',
-        'stub_number': '',
-        'period_end': ''
+    """Extract employee data from a single page of text using centralized regex patterns"""
+    # Use the centralized extraction function
+    data = extract_employee_data_patterns(text, page_num)
     
-    }
-    
-    # Try Pattern Set 1: Formatted layout (Page 1 style with line breaks)
-    success_count = 0
-    
-    # Utility: validate candidate name (kept lightweight to avoid false positives)
-    def _is_valid_name(name: str) -> bool:
-        if not name:
-            return False
-        if any(ch.isdigit() for ch in name):  # reject if digits inside
-            return False
-        tokens = [t for t in name.replace(',', ' ').split() if t]
-        if len(tokens) < 2 or len(tokens) > 7:
-            return False
-        # Require at least one token length > 1 (avoid just initials) and one capitalized word
-        if not any(len(t.strip(".-")) > 1 for t in tokens):
-            return False
-        if not any(t[0].isupper() for t in tokens if t):
-            return False
-        # Suffix allowance
-        suffixes = {"JR", "SR", "II", "III", "IV", "V"}
-        # Remove periods for suffix compare
-        if tokens[-1].rstrip('.').upper() in suffixes and len(tokens) < 2:
-            return False
-        # Reasonable total length
-        if not (5 < len(name) < 60):
-            return False
-        return True
-
-    # Extract employee name (formatted layout - look for name after company address block)
-    # Enhanced pattern: allows hyphens, apostrophes, commas, suffixes
-    # Anchor: state abbreviation + ZIP then newline then the name line
-    # NOTE: Character class includes letters, period, apostrophe, hyphen, space, comma
-    name_pattern_1 = r"[A-Z]{2}\s+\d{5}\s*\n([A-Za-z][A-Za-z\.\'\- ,]{3,60}?)(?:,\s*(?:Jr|Sr|II|III|IV|V))?\s*\n"
-    name_match = re.search(name_pattern_1, text)
-    if name_match:
-        candidate_name = name_match.group(1).strip()
-        if _is_valid_name(candidate_name):
-            data['employee_name'] = candidate_name
-            success_count += 1
-    
-    # Extract pay rate (formatted layout: "Pay Rate \n27.50 HW")
-    pay_rate_pattern_1 = r'Pay Rate\s*\n(\d+\.\d+)\s*HW'
-    pay_rate_match = re.search(pay_rate_pattern_1, text)
-    if pay_rate_match:
-        data['pay_rate'] = pay_rate_match.group(1).strip()
-        success_count += 1
-    
-    # Extract employee number (formatted layout: "Employee Number \n00-ANA")
-    emp_pattern_1 = r'Employee Number\s*\n([0-9]{2}-[A-Z]+)'
-    emp_match = re.search(emp_pattern_1, text)
-    if emp_match:
-        data['employee_number'] = emp_match.group(1).strip()
-        success_count += 1
-    
-    # Extract stub number (formatted layout: standard newline form)
-    stub_pattern_1 = r'Stub Number\s*\n([A-Z0-9]{5,})'
-    stub_match = re.search(stub_pattern_1, text)
-    if stub_match:
-        candidate = stub_match.group(1).strip()
-        if candidate.startswith('D'):
-            data['stub_number'] = candidate
-            success_count += 1
-
-    # Extract period end date (standard layout newline)
-    period_end_pattern_1 = r'Period End\s*\n(\d{1,2}/\d{1,2}/\d{4})'
-    period_end_match = re.search(period_end_pattern_1, text)
-    if period_end_match:
-        data['period_end'] = period_end_match.group(1).strip()
-        success_count += 1
-
-    # Additional compact / merged label recovery BEFORE pattern set 2 fallback
-    if not data['period_end'] or not data['stub_number']:
-        # Look for merged line: "Period End Stub Number" style followed by date + stub same or next line
-        # Pattern: optional 'Period End' then date then optional other labels then stub (D+digits)
-        merged_pattern = r'(?:Period End\s+Stub Number|Period End Stub Number)?\s*(\d{1,2}/\d{1,2}/\d{4})\s+(D\d{6,})'
-        merged_match = re.search(merged_pattern, text)
-        if merged_match:
-            date_val, stub_val = merged_match.group(1), merged_match.group(2)
-            if not data['period_end']:
-                data['period_end'] = date_val
-            if not data['stub_number']:
-                data['stub_number'] = stub_val
-
-    if not data['stub_number']:
-        # Fallback: last D followed by 6+ digits in page
-        stub_candidates = re.findall(r'D\d{6,}', text)
-        if stub_candidates:
-            data['stub_number'] = stub_candidates[-1]
-
-    if not data['period_end']:
-        # Fallback: choose date closest to 'Pay Rate' or 'Stub Number'
-        dates = list(re.finditer(r'\b\d{1,2}/\d{1,2}/\d{4}\b', text))
-        if dates:
-            anchor_indices = []
-            for anchor in ('Pay Rate', 'Stub Number'):
-                idx = text.find(anchor)
-                if idx != -1:
-                    anchor_indices.append(idx)
-            if anchor_indices:
-                target = min(anchor_indices)
-                # Pick date whose start position absolute distance to anchor is minimal
-                best = min(dates, key=lambda m: abs(m.start() - target))
-                data['period_end'] = best.group(0)
-            else:
-                # Default: first date (often correct for period end in top block)
-                data['period_end'] = dates[0].group(0)
-    
-    # If Pattern Set 1 didn't find enough data, try Pattern Set 2: Compact layout (Page 2 style)
-    if success_count < 3:  # If we didn't find at least 3 out of 4 fields
-        
-        # Extract employee name (compact layout - look for name after date)
-        if not data['employee_name']:
-            # Pattern: Look for name after date - enhanced character class & optional suffix
-            name_pattern_2 = r"\d{1,2}/\d{1,2}/\d{4}\s+([A-Za-z][A-Za-z\.\'\- ,]{3,60}?)(?:,\s*(?:Jr|Sr|II|III|IV|V))?\s*\n"
-            name_match = re.search(name_pattern_2, text)
-            if name_match:
-                candidate_name = name_match.group(1).strip()
-                if _is_valid_name(candidate_name):
-                    data['employee_name'] = candidate_name
-
-        # Fallback heuristic: scan lines between header and "Employee Number"
-        if not data['employee_name']:
-            lines = text.splitlines()
-            # Identify possible window
-            try:
-                header_end_idx = 0
-                for i, ln in enumerate(lines[:10]):  # search first 10 lines for ZIP (5 digits)
-                    if re.search(r'\b\d{5}\b', ln):
-                        header_end_idx = i
-                emp_idx = next((i for i, ln in enumerate(lines) if 'Employee Number' in ln), None)
-                window = lines[header_end_idx+1:emp_idx if emp_idx else header_end_idx+6]
-                for cand in window:
-                    c = cand.strip()
-                    if _is_valid_name(c):
-                        data['employee_name'] = c
-                        break
-            except Exception:
-                pass
-        
-        # Extract pay rate (compact layout: "HW 25.00" or "HW25.00")
-        if not data['pay_rate']:
-            pay_rate_pattern_2 = r'HW\s*(\d+\.\d+)'
-            pay_rate_match = re.search(pay_rate_pattern_2, text)
-            if pay_rate_match:
-                data['pay_rate'] = pay_rate_match.group(1).strip()
-        
-        # Extract employee number (compact layout: "YTD20-XXX" format)
-        if not data['employee_number']:
-            emp_pattern_2 = r'YTD([0-9]{2}-[A-Z]+[0-9]*)'
-            emp_match = re.search(emp_pattern_2, text)
-            if emp_match:
-                data['employee_number'] = emp_match.group(1).strip()
-        
-        # Extract stub number (compact legacy pattern)
-        if not data['stub_number']:
-            stub_pattern_2 = r'Stub Number(?:\s|)(D\d{6,})'
-            stub_match = re.search(stub_pattern_2, text)
-            if stub_match:
-                data['stub_number'] = stub_match.group(1).strip()
-
-        # Extract period end date (compact layout inline before labels)
-        if not data['period_end']:
-            period_end_pattern_2 = r'(\d{1,2}/\d{1,2}/\d{4}).{0,40}?Period End'
-            period_end_match = re.search(period_end_pattern_2, text)
-            if period_end_match:
-                data['period_end'] = period_end_match.group(1).strip()
+    # Add filename to the data
+    data['filename'] = filename
     
     return data
 

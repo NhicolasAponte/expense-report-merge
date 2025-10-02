@@ -6,6 +6,8 @@ import pdfplumber
 from dataclasses import dataclass, asdict
 from typing import List, Dict, Optional
 from dataclasses import field
+# Import the centralized employee regex patterns
+from regex_patterns.employee_regex import extract_employee_data_patterns
 
 # Add parent directory to path for config import
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -55,15 +57,6 @@ class PaystubExtractor:
         # Matches: "Item Name" followed by optional hours, amount, YTD
         self.line_item_pattern = r'^([A-Za-z][A-Za-z\s\-/\.()&]+?)\s+(?:(\d+\.\d+)\s+)?(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
         
-        # Pattern for employee info
-        self.employee_patterns = {
-            'name': r'^([A-Z][a-z]+(?:\s+[A-Z]\.?\s*)?[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+\d{1,2}/\d{1,2}/\d{4}$',
-            'employee_number': r'(\d{2}-[A-Z0-9]+)',
-            'pay_rate': r'(\d+\.\d+)\s+HW',
-            'period_end': r'(\d{1,2}/\d{1,2}/\d{4})',
-            'stub_number': r'(D\d+)'
-        }
-        
         # Pattern for summary amounts
         self.summary_patterns = {
             'gross_earnings': r'Gross\s+Earnings:\s*([\d,]+\.\d+)',
@@ -110,22 +103,18 @@ class PaystubExtractor:
             return 0.0
 
     def extract_employee_info(self, text: str) -> Dict[str, str]:
-        """Extract employee information from the header."""
-        info = {}
+        """Extract employee information using centralized regex patterns"""
+        # Use the centralized extraction function
+        employee_data = extract_employee_data_patterns(text, page_num=1)
         
-        lines = text.split('\n')
-        for line in lines:
-            # Employee name (appears before date)
-            name_match = re.search(self.employee_patterns['name'], line)
-            if name_match:
-                info['employee_name'] = name_match.group(1).strip()
-            
-            # Employee number, pay rate, period end, stub number
-            for key, pattern in self.employee_patterns.items():
-                if key != 'name':
-                    match = re.search(pattern, line)
-                    if match:
-                        info[key] = match.group(1)
+        # Convert to the expected format for this function
+        info = {
+            'employee_name': employee_data.get('employee_name', ''),
+            'employee_number': employee_data.get('employee_number', ''),
+            'pay_rate': employee_data.get('pay_rate', ''),
+            'period_end': employee_data.get('period_end', ''),
+            'stub_number': employee_data.get('stub_number', '')
+        }
         
         return info
 
