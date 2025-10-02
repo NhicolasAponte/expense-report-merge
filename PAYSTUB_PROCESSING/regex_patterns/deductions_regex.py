@@ -18,8 +18,9 @@ class DeductionsRegexPatterns:
     TAX_DEDUCTIONS_SECTION_START = r'•••\s*TAX\s+DEDUCTIONS\s*•••|TAX DEDUCTIONS'
     TAX_DEDUCTIONS_SECTION_END = r'•••\s*DEDUCTIONS\s*\*+|(?<!TAX\s)DEDUCTIONS'
     
-    DEDUCTIONS_SECTION_START = r'•••\s*DEDUCTIONS\s*\*+|(?<!TAX\s)DEDUCTIONS'
-    DEDUCTIONS_SECTION_END = r'•••\s*DIRECT\s+DEPOSITS\s*•••|DIRECT DEPOSITS'
+    # Section start pattern for regular deductions (after tax deductions)
+    DEDUCTIONS_SECTION_START = r'[•\*]{3}\s*DEDUCTIONS\s*[•\*]{3}|(?<!TAX\s)DEDUCTIONS'
+    DEDUCTIONS_SECTION_END = r'[•\*]{3}\s*DIRECT\s+DEPOSITS\s*[•\*]{3}|DIRECT DEPOSITS'
     
     # Alternative section patterns (without bullet decorations)
     SIMPLE_TAX_DEDUCTIONS_START = r'^TAX DEDUCTIONS$'
@@ -318,7 +319,8 @@ def extract_tax_deductions_data_pdfplumber(text: str, page_num: int = 1) -> List
     tax_deductions = []
     
     # pdfplumber pattern: "Category Amount YTD"
-    pdfplumber_pattern = r'^([A-Za-z][A-Za-z\s/\-\.&]+?)\s+(\d+\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
+    # Updated to handle categories starting with numbers and special chars
+    pdfplumber_pattern = r'^([A-Za-z0-9][A-Za-z\s/\-\.&\(\)0-9\+]+?)\s+(\d+\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
     
     for i in range(start_idx, end_idx):
         line = lines[i].strip()
@@ -364,10 +366,12 @@ def extract_deductions_data_pdfplumber(text: str, page_num: int = 1) -> List[Dic
     end_idx = -1
     
     for i, line in enumerate(lines):
-        if '•••' in line and 'DEDUCTIONS' in line and 'TAX' not in line:
+        # Look for deductions section start with either ••• or *** patterns
+        if (('•••' in line or '***' in line) and 'DEDUCTIONS' in line and 'TAX' not in line):
             start_idx = i + 1
-        elif start_idx != -1 and ('•••' in line or 'Net' in line or 'Gross' in line):
+        elif start_idx != -1 and (('•••' in line and ('DIRECT' in line or 'Net' in line or 'Gross' in line)) or 'DIRECT DEPOSITS' in line):
             end_idx = i
+            break
             break
     
     if start_idx == -1:
@@ -379,7 +383,8 @@ def extract_deductions_data_pdfplumber(text: str, page_num: int = 1) -> List[Dic
     deductions = []
     
     # pdfplumber pattern: "Category Amount YTD"
-    pdfplumber_pattern = r'^([A-Za-z][A-Za-z\s/\-\.&\(\)0-9]+?)\s+(\d+\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
+    # Updated to handle categories starting with numbers (401K) and special chars (+)
+    pdfplumber_pattern = r'^([A-Za-z0-9][A-Za-z\s/\-\.&\(\)0-9\+]+?)\s+(\d+\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
     
     for i in range(start_idx, end_idx):
         line = lines[i].strip()
