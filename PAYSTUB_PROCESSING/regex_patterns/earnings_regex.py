@@ -291,7 +291,7 @@ class EarningsDataExtractor:
 
 def extract_earnings_data(text: str, page_num: int = 1) -> List[Dict[str, Any]]:
     """
-    Main function to extract earnings data from paystub text using centralized patterns.
+    Main function to extract earnings data, auto-detecting format (pdfplumber vs PyPDF2).
     
     Args:
         text: Full text content of the paystub page
@@ -300,6 +300,12 @@ def extract_earnings_data(text: str, page_num: int = 1) -> List[Dict[str, Any]]:
     Returns:
         List of earnings records with category, hours, amount, ytd
     """
+    # Try pdfplumber format first (more structured)
+    pdfplumber_result = extract_earnings_data_pdfplumber(text, page_num)
+    if pdfplumber_result:
+        return pdfplumber_result
+    
+    # Fallback to original PyPDF2 format extraction
     extractor = EarningsDataExtractor()
     lines = text.split('\n')
     
@@ -362,3 +368,72 @@ def extract_earnings_data(text: str, page_num: int = 1) -> List[Dict[str, Any]]:
             return earnings
     
     return []
+
+
+def extract_earnings_data_pdfplumber(text: str, page_num: int = 1) -> List[Dict[str, Any]]:
+    """
+    Extract earnings data from pdfplumber text format.
+    
+    pdfplumber format: "Category Hours Amount YTD" all on one line
+    Examples:
+    - "Holiday 0.00 0.00 1,428.00"
+    - "Loaders 29.15 597.58 28,309.32"
+    - "Paid Time Off 14.00 287.00 1,598.00"
+    
+    Args:
+        text: Full text content from pdfplumber
+        page_num: Page number for reference
+        
+    Returns:
+        List of earnings records with category, hours, amount, ytd
+    """
+    lines = text.split('\n')
+    earnings = []
+    
+    # Find earnings section boundaries
+    earnings_start = -1
+    earnings_end = -1
+    
+    for i, line in enumerate(lines):
+        line_stripped = line.strip()
+        if 'EARNINGS' in line_stripped and earnings_start == -1:
+            earnings_start = i
+        elif earnings_start != -1 and ('TAX DEDUCTIONS' in line_stripped or 'DEDUCTIONS' in line_stripped):
+            earnings_end = i
+            break
+    
+    if earnings_start == -1:
+        return []
+    
+    if earnings_end == -1:
+        earnings_end = len(lines)
+    
+    # Pattern for pdfplumber earnings lines: "Category Hours Amount YTD"
+    # Category can have spaces, periods, hyphens
+    # Numbers can have commas and are decimal format
+    earnings_pattern = r'^([A-Za-z][A-Za-z\s\-/\.()&]+?)\s+(\d+\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
+    
+    # Extract earnings data from the section
+    for i in range(earnings_start + 1, earnings_end):
+        line = lines[i].strip()
+        
+        # Skip empty lines and section headers
+        if not line or '•' in line or '*' in line:
+            continue
+        
+        # Try to match the earnings pattern
+        match = re.match(earnings_pattern, line)
+        if match:
+            category = match.group(1).strip()
+            hours = match.group(2).replace(',', '')
+            amount = match.group(3).replace(',', '')
+            ytd = match.group(4).replace(',', '')
+            
+            earnings.append({
+                'category': category,
+                'hours': hours,
+                'amount': amount,
+                'ytd': ytd
+            })
+    
+    return earnings
