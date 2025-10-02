@@ -16,7 +16,7 @@ class DeductionsRegexPatterns:
     
     # Section boundary patterns
     TAX_DEDUCTIONS_SECTION_START = r'•••\s*TAX\s+DEDUCTIONS\s*•••|TAX DEDUCTIONS'
-    TAX_DEDUCTIONS_SECTION_END = r'•••\s*DEDUCTIONS\s*\*+|(?<!TAX\s)DEDUCTIONS'
+    TAX_DEDUCTIONS_SECTION_END = r'[•\*]{3}\s*DEDUCTIONS\s*[•\*]{3}|(?<!TAX\s)DEDUCTIONS'
     
     # Section start pattern for regular deductions (after tax deductions)
     DEDUCTIONS_SECTION_START = r'[•\*]{3}\s*DEDUCTIONS\s*[•\*]{3}|(?<!TAX\s)DEDUCTIONS'
@@ -304,9 +304,12 @@ def extract_tax_deductions_data_pdfplumber(text: str, page_num: int = 1) -> List
     end_idx = -1
     
     for i, line in enumerate(lines):
-        if '•••' in line and 'TAX' in line and 'DEDUCTIONS' in line:
+        if ('•••' in line or '***' in line) and 'TAX' in line and 'DEDUCTIONS' in line:
             start_idx = i + 1
-        elif start_idx != -1 and ('•••' in line and ('DEDUCTIONS' in line or 'DIRECT' in line)):
+        elif start_idx != -1 and (('•••' in line or '***' in line) and 'DEDUCTIONS' in line and 'TAX' not in line):
+            end_idx = i
+            break
+        elif start_idx != -1 and (('•••' in line or '***' in line) and 'DIRECT' in line):
             end_idx = i
             break
     
