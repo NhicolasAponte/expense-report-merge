@@ -2,3 +2,7 @@ __pycache__/
 *.pyc
 venv/
 .env/
+
+PAYSTUB_PROCESSING/test-files/
+PAYSTUB_PROCESSING/result-files/
+PAYSTUB_PROCESSING/test-keys/
