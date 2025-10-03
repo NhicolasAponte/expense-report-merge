@@ -10,7 +10,14 @@ It orchestrates the entire pipeline:
 4. CSV output generation
 
 Output files:
-- earnings.csv: employee_data + earnings_data (with hours)
+- earnings.csv: employee_data + earnings_data (with        # Step 3: Generate CSV files
+        print("Generating CSV files...")
+        output_files = {
+            'earnings': self.generate_earnings_csv(),
+            'tax_deductions': self.generate_tax_deductions_csv(),
+            'deductions': self.generate_deductions_csv(),
+            'summary': self.generate_summary_csv()
+        }
 - tax_deductions.csv: employee_data + tax_deductions_data
 - deductions.csv: employee_data + deductions_data
 
@@ -33,6 +40,7 @@ from common_utils import get_pdf_path, setup_output_directory, get_pdf_filename_
 from regex_patterns.employee_regex import extract_employee_data_patterns
 from regex_patterns.earnings_regex import extract_earnings_data
 from regex_patterns.deductions_regex import extract_tax_deductions_data, extract_deductions_data
+from regex_patterns.summary_regex import extract_summary_data
 
 
 @dataclass
@@ -87,6 +95,7 @@ class PaystubPipeline:
         self.earnings_records: List[EarningsRecord] = []
         self.tax_deductions_records: List[DeductionRecord] = []
         self.deductions_records: List[DeductionRecord] = []
+        self.summary_records: List[Dict[str, Any]] = []
     
     def extract_text_with_pdfplumber(self) -> List[Tuple[int, str]]:
         """
@@ -316,6 +325,21 @@ class PaystubPipeline:
             print(f"Page {page_num}: Found {len(deductions_data)} deductions items")
         except Exception as e:
             print(f"Page {page_num}: Error extracting deductions: {e}")
+        
+        # Extract summary data
+        try:
+            summary_data = extract_summary_data(text, page_num)
+            # Add employee info to summary data
+            summary_data.update({
+                'filename': self.filename,
+                'employee_name': employee_data.employee_name,
+                'employee_number': employee_data.employee_number,
+                'period_end': employee_data.period_end
+            })
+            self.summary_records.append(summary_data)
+            print(f"Page {page_num}: Found summary data")
+        except Exception as e:
+            print(f"Page {page_num}: Error extracting summary: {e}")
     
     def generate_earnings_csv(self) -> str:
         """Generate earnings.csv with employee data + earnings data."""
@@ -399,6 +423,45 @@ class PaystubPipeline:
         print(f"Generated: {output_file} ({len(self.deductions_records)} records)")
         return output_file
     
+    def generate_summary_csv(self) -> str:
+        """Generate summary.csv with employee data + summary financial data."""
+        output_file = os.path.join(self.output_dir, "summary.csv")
+        
+        with open(output_file, 'w', newline='', encoding='utf-8') as csvfile:
+            fieldnames = [
+                'filename', 'page_number', 'employee_name', 'employee_number', 'period_end',
+                'check_amount', 'total_direct_deposit_amount', 'total_direct_deposit_ytd',
+                'gross_earnings_amount', 'gross_earnings_ytd', 'total_deductions_amount', 'total_deductions_ytd',
+                'net_earnings', 'period_accrued_hours', 'available_pto_hours', 
+                'ytd_accrued_hours', 'ytd_paid_pto_hours'
+            ]
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            
+            for record in self.summary_records:
+                writer.writerow({
+                    'filename': record.get('filename', ''),
+                    'page_number': record.get('page_number', ''),
+                    'employee_name': record.get('employee_name', ''),
+                    'employee_number': record.get('employee_number', ''),
+                    'period_end': record.get('period_end', ''),
+                    'check_amount': f"{record.get('check_amount', 0):.2f}",
+                    'total_direct_deposit_amount': f"{record.get('total_direct_deposit_amount', 0):.2f}",
+                    'total_direct_deposit_ytd': f"{record.get('total_direct_deposit_ytd', 0):.2f}",
+                    'gross_earnings_amount': f"{record.get('gross_earnings_amount', 0):.2f}",
+                    'gross_earnings_ytd': f"{record.get('gross_earnings_ytd', 0):.2f}",
+                    'total_deductions_amount': f"{record.get('total_deductions_amount', 0):.2f}",
+                    'total_deductions_ytd': f"{record.get('total_deductions_ytd', 0):.2f}",
+                    'net_earnings': f"{record.get('net_earnings', 0):.2f}",
+                    'period_accrued_hours': f"{record.get('period_accrued_hours', 0):.2f}",
+                    'available_pto_hours': f"{record.get('available_pto_hours', 0):.2f}",
+                    'ytd_accrued_hours': f"{record.get('ytd_accrued_hours', 0):.2f}",
+                    'ytd_paid_pto_hours': f"{record.get('ytd_paid_pto_hours', 0):.2f}"
+                })
+        
+        print(f"Generated: {output_file} ({len(self.summary_records)} records)")
+        return output_file
+    
     def run(self) -> Dict[str, str]:
         """
         Execute the complete pipeline.
@@ -425,7 +488,8 @@ class PaystubPipeline:
         csv_files = {
             'earnings': self.generate_earnings_csv(),
             'tax_deductions': self.generate_tax_deductions_csv(),
-            'deductions': self.generate_deductions_csv()
+            'deductions': self.generate_deductions_csv(),
+            'summary': self.generate_summary_csv()
         }
         
         # Step 4: Summary
@@ -435,6 +499,7 @@ class PaystubPipeline:
         print(f"Total earnings records: {len(self.earnings_records)}")
         print(f"Total tax deductions records: {len(self.tax_deductions_records)}")
         print(f"Total deductions records: {len(self.deductions_records)}")
+        print(f"Total summary records: {len(self.summary_records)}")
         print(f"\nOutput files:")
         for csv_type, csv_path in csv_files.items():
             print(f"  {csv_type}: {csv_path}")
