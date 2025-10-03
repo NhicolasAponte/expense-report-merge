@@ -23,7 +23,7 @@ class EarningsRegexPatterns:
     
     # Data extraction patterns
     DECIMAL_NUMBER = r'\d+\.\d+'
-    CURRENCY_AMOUNT = r'\d+(?:,\d{3})*\.?\d*'
+    CURRENCY_AMOUNT = r'\d+(?:,\d{3})*\.?\d*-?'  # Updated to handle trailing minus signs
     HOURS_VALUE = r'^\d+\.\d{2}$'
     
     # Line item patterns (for structured extraction)
@@ -190,8 +190,20 @@ class EarningsDataExtractor:
             # Extract two numbers from each line
             numbers = re.findall(self.patterns.CURRENCY_AMOUNT, line)
             if len(numbers) >= 2:
-                amount = numbers[0].replace(',', '')
-                ytd = numbers[1].replace(',', '')
+                amount_str = numbers[0].replace(',', '')
+                ytd_str = numbers[1].replace(',', '')
+                
+                # Handle trailing minus sign (e.g., "352.21-" becomes "-352.21")
+                if amount_str.endswith('-'):
+                    amount = str(-float(amount_str[:-1]))
+                else:
+                    amount = amount_str
+                    
+                if ytd_str.endswith('-'):
+                    ytd = str(-float(ytd_str[:-1]))
+                else:
+                    ytd = ytd_str
+                    
                 pairs.append((amount, ytd))
             else:
                 pairs.append(('0.00', '0.00'))

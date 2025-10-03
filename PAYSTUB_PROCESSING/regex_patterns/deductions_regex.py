@@ -27,7 +27,7 @@ class DeductionsRegexPatterns:
     SIMPLE_DEDUCTIONS_START = r'^DEDUCTIONS$'
     
     # Data extraction patterns
-    CURRENCY_AMOUNT = r'\d+(?:,\d{3})*\.?\d*'
+    CURRENCY_AMOUNT = r'\d+(?:,\d{3})*\.?\d*-?'  # Updated to handle trailing minus signs
     
     # Line item patterns (for structured extraction)
     LINE_ITEM_WITH_AMOUNTS = r'^([A-Za-z][A-Za-z\s\-/\.()&]+?)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
@@ -194,12 +194,31 @@ class DeductionsDataExtractor:
                 # Extract two numbers from the line (amount and ytd)
                 numbers = re.findall(self.patterns.CURRENCY_AMOUNT, line_clean)
                 if len(numbers) >= 2:
-                    amount = numbers[0].replace(',', '')
-                    ytd = numbers[1].replace(',', '')
+                    amount_str = numbers[0].replace(',', '')
+                    ytd_str = numbers[1].replace(',', '')
+                    
+                    # Handle trailing minus sign (e.g., "352.21-" becomes "-352.21")
+                    if amount_str.endswith('-'):
+                        amount = str(-float(amount_str[:-1]))
+                    else:
+                        amount = amount_str
+                        
+                    if ytd_str.endswith('-'):
+                        ytd = str(-float(ytd_str[:-1]))
+                    else:
+                        ytd = ytd_str
+                        
                     data_pairs.append((amount, ytd))
                 elif len(numbers) == 1:
                     # Single number case - might be amount only
-                    amount = numbers[0].replace(',', '')
+                    amount_str = numbers[0].replace(',', '')
+                    
+                    # Handle trailing minus sign
+                    if amount_str.endswith('-'):
+                        amount = str(-float(amount_str[:-1]))
+                    else:
+                        amount = amount_str
+                        
                     data_pairs.append((amount, '0.00'))
         
         return data_pairs
