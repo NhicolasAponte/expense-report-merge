@@ -514,23 +514,82 @@ def _parse_earnings_line_item_robust(line: str, page_num: int) -> Optional[Dict[
     line_clean = line.strip()
     
     # Find all decimal numbers (amounts) in the line
-    # This pattern matches: 123.45, 1,234.56, 0.00, etc.
-    number_pattern = r'\d{1,3}(?:,\d{3})*\.\d{2}'
-    numbers = re.findall(number_pattern, line_clean)
+    # Enhanced pattern that handles both US format (123.45) and European format (123,45)
+    # Also handles thousands separators: 1,234.56 or 1.234,56
+    us_pattern = r'\d{1,3}(?:,\d{3})*\.\d{2}'        # US: 1,234.56
+    euro_pattern = r'\d{1,3}(?:\.\d{3})*,\d{2}'      # European: 1.234,56
+    simple_us = r'\d+\.\d{2}'                         # Simple US: 123.45
+    simple_euro = r'\d+,\d{2}'                        # Simple European: 123,45
+    
+    # Try each pattern and combine results, preserving order
+    all_numbers = []
+    
+    # Find all potential matches with their positions
+    import re
+    matches_with_pos = []
+    
+    for pattern_name, pattern in [('us', us_pattern), ('euro', euro_pattern), ('simple_us', simple_us), ('simple_euro', simple_euro)]:
+        for match in re.finditer(pattern, line_clean):
+            matches_with_pos.append((match.start(), match.end(), match.group(), pattern_name))
+    
+    # Sort by position and remove overlaps
+    matches_with_pos.sort(key=lambda x: x[0])
+    
+    # Remove overlapping matches (keep the longer/more specific match)
+    filtered_matches = []
+    for start, end, text, pattern_name in matches_with_pos:
+        # Check if this match overlaps with any existing match
+        overlaps = False
+        for existing_start, existing_end, existing_text, existing_pattern in filtered_matches:
+            if not (end <= existing_start or start >= existing_end):  # They overlap
+                # Keep the longer match
+                if len(text) <= len(existing_text):
+                    overlaps = True
+                    break
+                else:
+                    # Remove the existing shorter match
+                    filtered_matches = [(s, e, t, p) for s, e, t, p in filtered_matches if not (s == existing_start and e == existing_end)]
+        
+        if not overlaps:
+            filtered_matches.append((start, end, text, pattern_name))
+    
+    # Extract just the numbers in order
+    numbers = [text for start, end, text, pattern_name in sorted(filtered_matches, key=lambda x: x[0])]
     
     # We expect exactly 3 numbers: hours, amount, and YTD
     if len(numbers) != 3:
         return None
     
     try:
-        # Extract amounts
-        hours_str = numbers[0].replace(',', '')
-        amount_str = numbers[1].replace(',', '')
-        ytd_str = numbers[2].replace(',', '')
+        # Extract amounts and normalize format
+        def normalize_number(num_str):
+            """Convert both US (1,234.56) and European (1.234,56) formats to float"""
+            if ',' in num_str and '.' in num_str:
+                # Has both comma and period - determine which is thousands vs decimal separator
+                comma_pos = num_str.rfind(',')
+                period_pos = num_str.rfind('.')
+                
+                if period_pos > comma_pos:
+                    # US format: 1,234.56 (comma is thousands, period is decimal)
+                    return float(num_str.replace(',', ''))
+                else:
+                    # European format: 1.234,56 (period is thousands, comma is decimal)
+                    return float(num_str.replace('.', '').replace(',', '.'))
+            elif ',' in num_str:
+                # Only comma - could be European decimal (123,45) or US thousands (1,234)
+                if len(num_str.split(',')[-1]) == 2:
+                    # European decimal format: 123,45
+                    return float(num_str.replace(',', '.'))
+                else:
+                    # US thousands format: 1,234
+                    return float(num_str.replace(',', ''))
+            else:
+                # Only period or no separator - standard US format
+                return float(num_str)
         
-        hours = float(hours_str)
-        amount = float(amount_str)
-        ytd = float(ytd_str)
+        hours = normalize_number(numbers[0])
+        amount = normalize_number(numbers[1])
+        ytd = normalize_number(numbers[2])
         
         # Find the category by removing the numbers from the end
         # This approach preserves ALL characters in the category name
