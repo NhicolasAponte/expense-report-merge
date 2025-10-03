@@ -22,15 +22,21 @@ class SummaryRegexPatterns:
     # Currency amount pattern (handles negative amounts with trailing minus)
     CURRENCY_AMOUNT = r'\d+(?:,\d{3})*\.?\d*-?'
     
+    # Currency amount pattern that handles parentheses for negative values
+    CURRENCY_AMOUNT_WITH_PARENS = r'(\(?\d+(?:,\d{3})*\.?\d*\)?-?)'
+    
     # Hours pattern (decimal hours)
     HOURS_AMOUNT = r'\d+\.\d{2}'
     
-    # Summary section line patterns
-    CHECK_AMOUNT_LINE = r'Check\s+Amount:\s*(' + CURRENCY_AMOUNT + r')\s+Total\s+Direct\s+Deposit:\s*(' + CURRENCY_AMOUNT + r')\s+(' + CURRENCY_AMOUNT + r')'
-    GROSS_EARNINGS_LINE = r'Gross\s+Earnings:\s*(' + CURRENCY_AMOUNT + r')\s+(' + CURRENCY_AMOUNT + r')\s+Total\s+Deductions:\s*(' + CURRENCY_AMOUNT + r')\s+(' + CURRENCY_AMOUNT + r')'
-    NET_EARNINGS_LINE = r'Net\s+Earnings:\s*(' + CURRENCY_AMOUNT + r')'
-    PERIOD_PTO_LINE = r'Period\s+Accrued\s+Hours:\s*(' + HOURS_AMOUNT + r')\s+Available\s+PTO\s+Hours:\s*(' + HOURS_AMOUNT + r')'
-    YTD_PTO_LINE = r'YTD\s+Accrued\s+Hours:\s*(' + HOURS_AMOUNT + r')\s+YTD\s+Paid\s+PTO\s+Hours:\s*(' + HOURS_AMOUNT + r')'
+    # Hours pattern that handles parentheses for negative values
+    HOURS_AMOUNT_WITH_PARENS = r'(\(?\d+\.\d{2}\)?-?)'
+    
+    # Summary section line patterns (all support parentheses for negative values)
+    CHECK_AMOUNT_LINE = r'Check\s+Amount:\s*' + CURRENCY_AMOUNT_WITH_PARENS + r'\s+Total\s+Direct\s+Deposit:\s*' + CURRENCY_AMOUNT_WITH_PARENS + r'\s+' + CURRENCY_AMOUNT_WITH_PARENS
+    GROSS_EARNINGS_LINE = r'Gross\s+Earnings:\s*' + CURRENCY_AMOUNT_WITH_PARENS + r'\s+' + CURRENCY_AMOUNT_WITH_PARENS + r'\s+Total\s+Deductions:\s*' + CURRENCY_AMOUNT_WITH_PARENS + r'\s+' + CURRENCY_AMOUNT_WITH_PARENS
+    NET_EARNINGS_LINE = r'Net\s+Earnings:\s*' + CURRENCY_AMOUNT_WITH_PARENS
+    PERIOD_PTO_LINE = r'Period\s+Accrued\s+Hours:\s*' + HOURS_AMOUNT_WITH_PARENS + r'\s+Available\s+PTO\s+Hours:\s*' + HOURS_AMOUNT_WITH_PARENS
+    YTD_PTO_LINE = r'YTD\s+Accrued\s+Hours:\s*' + HOURS_AMOUNT_WITH_PARENS + r'\s+YTD\s+Paid\s+PTO\s+Hours:\s*' + HOURS_AMOUNT_WITH_PARENS
     
     # Alternative patterns for edge cases
     SIMPLE_CHECK_AMOUNT = r'Check\s+Amount.*?(\d+\.\d{2})'
@@ -44,26 +50,42 @@ class SummaryDataExtractor:
     def __init__(self):
         self.patterns = SummaryRegexPatterns()
     
-    def parse_amount(self, amount_str: str) -> float:
+    def parse_value(self, value_str: str) -> float:
         """
-        Parse amount string handling trailing minus signs for negative amounts.
+        Parse value string handling both parentheses and trailing minus signs for negative amounts.
         
         Args:
-            amount_str: String representation of amount (e.g., "123.45" or "123.45-")
+            value_str: String representation of value (e.g., "123.45", "123.45-", "(123.45)", "(1,234.56)")
             
         Returns:
             Float value with proper sign
         """
-        if not amount_str:
+        if not value_str:
             return 0.0
         
-        clean_amount = amount_str.replace(',', '')
+        # Remove commas for thousands separators
+        clean_value = value_str.replace(',', '')
         
+        # Handle parentheses for negative values (e.g., "(3.83)" becomes "-3.83")
+        if clean_value.startswith('(') and clean_value.endswith(')'):
+            return -float(clean_value[1:-1])
         # Handle trailing minus sign (e.g., "352.21-" becomes "-352.21")
-        if clean_amount.endswith('-'):
-            return -float(clean_amount[:-1])
+        elif clean_value.endswith('-'):
+            return -float(clean_value[:-1])
         else:
-            return float(clean_amount)
+            return float(clean_value)
+    
+    def parse_amount(self, amount_str: str) -> float:
+        """
+        Parse amount string - alias for parse_value for backward compatibility.
+        """
+        return self.parse_value(amount_str)
+    
+    def parse_hours(self, hours_str: str) -> float:
+        """
+        Parse hours string - alias for parse_value for backward compatibility.
+        """
+        return self.parse_value(hours_str)
     
     def extract_summary_data(self, text: str, page_num: int = 1) -> Dict[str, Any]:
         """
@@ -100,38 +122,38 @@ class SummaryDataExtractor:
             # Extract check amount and total direct deposit
             check_match = re.search(self.patterns.CHECK_AMOUNT_LINE, line, re.IGNORECASE)
             if check_match:
-                summary_data['check_amount'] = self.parse_amount(check_match.group(1))
-                summary_data['total_direct_deposit_amount'] = self.parse_amount(check_match.group(2))
-                summary_data['total_direct_deposit_ytd'] = self.parse_amount(check_match.group(3))
+                summary_data['check_amount'] = self.parse_value(check_match.group(1))
+                summary_data['total_direct_deposit_amount'] = self.parse_value(check_match.group(2))
+                summary_data['total_direct_deposit_ytd'] = self.parse_value(check_match.group(3))
                 continue
             
             # Extract gross earnings and total deductions
             gross_match = re.search(self.patterns.GROSS_EARNINGS_LINE, line, re.IGNORECASE)
             if gross_match:
-                summary_data['gross_earnings_amount'] = self.parse_amount(gross_match.group(1))
-                summary_data['gross_earnings_ytd'] = self.parse_amount(gross_match.group(2))
-                summary_data['total_deductions_amount'] = self.parse_amount(gross_match.group(3))
-                summary_data['total_deductions_ytd'] = self.parse_amount(gross_match.group(4))
+                summary_data['gross_earnings_amount'] = self.parse_value(gross_match.group(1))
+                summary_data['gross_earnings_ytd'] = self.parse_value(gross_match.group(2))
+                summary_data['total_deductions_amount'] = self.parse_value(gross_match.group(3))
+                summary_data['total_deductions_ytd'] = self.parse_value(gross_match.group(4))
                 continue
             
             # Extract net earnings
             net_match = re.search(self.patterns.NET_EARNINGS_LINE, line, re.IGNORECASE)
             if net_match:
-                summary_data['net_earnings'] = self.parse_amount(net_match.group(1))
+                summary_data['net_earnings'] = self.parse_value(net_match.group(1))
                 continue
             
             # Extract period accrued and available PTO hours
             period_pto_match = re.search(self.patterns.PERIOD_PTO_LINE, line, re.IGNORECASE)
             if period_pto_match:
-                summary_data['period_accrued_hours'] = float(period_pto_match.group(1))
-                summary_data['available_pto_hours'] = float(period_pto_match.group(2))
+                summary_data['period_accrued_hours'] = self.parse_value(period_pto_match.group(1))
+                summary_data['available_pto_hours'] = self.parse_value(period_pto_match.group(2))
                 continue
             
             # Extract YTD accrued and YTD paid PTO hours
             ytd_pto_match = re.search(self.patterns.YTD_PTO_LINE, line, re.IGNORECASE)
             if ytd_pto_match:
-                summary_data['ytd_accrued_hours'] = float(ytd_pto_match.group(1))
-                summary_data['ytd_paid_pto_hours'] = float(ytd_pto_match.group(2))
+                summary_data['ytd_accrued_hours'] = self.parse_value(ytd_pto_match.group(1))
+                summary_data['ytd_paid_pto_hours'] = self.parse_value(ytd_pto_match.group(2))
                 continue
         
         return summary_data
