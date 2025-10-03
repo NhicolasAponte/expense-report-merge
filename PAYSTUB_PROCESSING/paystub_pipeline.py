@@ -185,10 +185,12 @@ class PaystubPipeline:
         
         # Pattern 2: Data line like "00-AER ···-**-0489 17.50 HW 9/13/2025 D000122839"
         # Updated to handle various bullet characters in SSN masking and multiple department codes
-        data_line_pattern = r'^([0-9]{2}-[A-Z]+[0-9]*)\s+[·•\*\-\s]+[0-9\*\-•·]+\s+(\d+\.\d+)\s+HW\s+(\d{1,2}/\d{1,2}/\d{4})\s+(D\d{6,})$'
+        # Made SSN masking pattern more flexible to handle any Unicode characters
+        data_line_pattern = r'^([0-9]{2}-[A-Z]+[0-9]*)\s+\S+\s+(\d+\.\d+)\s+HW\s+(\d{1,2}/\d{1,2}/\d{4})\s+(D\d{6,})$'
         
         # Fallback pattern for OCR errors where '00-' or '07-' becomes 'oo-' or 'o7-'
-        data_line_fallback_pattern = r'^([o0][o07]-[A-Z]+[0-9]*)\s+[·•\*\-\s]+[0-9\*\-•·]+\s+(\d+\.\d+)\s+HW\s+(\d{1,2}/\d{1,2}/\d{4})\s+(D\d{6,})$'
+        # Also uses flexible SSN masking pattern
+        data_line_fallback_pattern = r'^([o0][o07]-[A-Z]+[0-9]*)\s+\S+\s+(\d+\.\d+)\s+HW\s+(\d{1,2}/\d{1,2}/\d{4})\s+(D\d{6,})$'
         
         for line in lines:
             line = line.strip()
@@ -226,7 +228,13 @@ class PaystubPipeline:
                 if fallback_match:
                     # Correct the OCR error: replace oo-/o7- with 00-/07-
                     emp_num = fallback_match.group(1)
-                    emp_num_corrected = re.sub(r'^o([o07])-', r'0\1-', emp_num, flags=re.IGNORECASE)
+                    # Enhanced OCR correction to handle multiple character substitutions
+                    # Fix patterns like OO-XXX -> 00-XXX, o7-XXX -> 07-XXX, etc.
+                    emp_num_corrected = emp_num
+                    emp_num_corrected = re.sub(r'^oo-', '00-', emp_num_corrected, flags=re.IGNORECASE)  # OO- -> 00-
+                    emp_num_corrected = re.sub(r'^o7-', '07-', emp_num_corrected, flags=re.IGNORECASE)  # o7- -> 07-
+                    emp_num_corrected = re.sub(r'^0o-', '00-', emp_num_corrected, flags=re.IGNORECASE)  # 0O- -> 00-
+                    emp_num_corrected = re.sub(r'^7o-', '70-', emp_num_corrected, flags=re.IGNORECASE)  # 7O- -> 70-
                     employee_data['employee_number'] = emp_num_corrected
                     employee_data['pay_rate'] = fallback_match.group(2)
                     employee_data['period_end'] = fallback_match.group(3)
