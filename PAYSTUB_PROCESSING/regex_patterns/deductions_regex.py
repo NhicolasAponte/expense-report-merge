@@ -465,8 +465,8 @@ def _parse_line_item_robust(line: str, page_num: int) -> Optional[Dict[str, Any]
     line_clean = line.strip()
     
     # Find all decimal numbers (amounts) in the line
-    # This pattern matches: 123.45, 1,234.56, 0.00, etc.
-    number_pattern = r'\d{1,3}(?:,\d{3})*\.\d{2}'
+    # This pattern matches: 123.45, 1,234.56, 0.00, 352.21- (negative with trailing minus), etc.
+    number_pattern = r'\d{1,3}(?:,\d{3})*\.\d{2}-?'
     numbers = re.findall(number_pattern, line_clean)
     
     # We expect exactly 2 numbers: amount and YTD
@@ -474,11 +474,20 @@ def _parse_line_item_robust(line: str, page_num: int) -> Optional[Dict[str, Any]
         return None
     
     try:
-        # Extract amounts
+        # Extract amounts - handle trailing minus signs for negative amounts
         amount_str = numbers[0].replace(',', '')
         ytd_str = numbers[1].replace(',', '')
-        amount = float(amount_str)
-        ytd = float(ytd_str)
+        
+        # Handle trailing minus sign (e.g., "352.21-" becomes "-352.21")
+        if amount_str.endswith('-'):
+            amount = -float(amount_str[:-1])
+        else:
+            amount = float(amount_str)
+            
+        if ytd_str.endswith('-'):
+            ytd = -float(ytd_str[:-1])
+        else:
+            ytd = float(ytd_str)
         
         # Find the category by removing the numbers from the end
         # This approach preserves ALL characters in the category name
