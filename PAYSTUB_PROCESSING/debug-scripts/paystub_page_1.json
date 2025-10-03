@@ -1,0 +1,71 @@
+{
+  "employee_name": "",
+  "employee_number": "",
+  "pay_period_end": "9/13/2025",
+  "stub_number": "D000123144",
+  "pay_rate": "",
+  "earnings": [],
+  "tax_deductions": [
+    {
+      "name": "Federal W/H",
+      "hours": null,
+      "amount": 64.47,
+      "ytd": 2693.22
+    },
+    {
+      "name": "Social Security Tax",
+      "hours": null,
+      "amount": 53.57,
+      "ytd": 2161.2
+    },
+    {
+      "name": "Medicare Tax",
+      "hours": null,
+      "amount": 12.53,
+      "ytd": 505.42
+    },
+    {
+      "name": "IAStateW/H",
+      "hours": null,
+      "amount": 24.0,
+      "ytd": 990.0
+    }
+  ],
+  "deductions": [
+    {
+      "name": "Aflac Accident",
+      "hours": null,
+      "amount": 7.92,
+      "ytd": 300.96
+    },
+    {
+      "name": "Aflac Hospital",
+      "hours": null,
+      "amount": 12.69,
+      "ytd": 482.22
+    },
+    {
+      "name": "Aflac Short Term Disability",
+      "hours": null,
+      "amount": 4.83,
+      "ytd": 183.54
+    },
+    {
+      "name": "Life Insurance",
+      "hours": null,
+      "amount": 0.0,
+      "ytd": 11.24
+    }
+  ],
+  "direct_deposits": [
+    {
+      "name": "First Interstate Bank",
+      "hours": null,
+      "amount": 616.11,
+      "ytd": 24196.43
+    }
+  ],
+  "gross_earnings": 884.58,
+  "net_earnings": 616.11,
+  "total_deductions": 268.47
+}

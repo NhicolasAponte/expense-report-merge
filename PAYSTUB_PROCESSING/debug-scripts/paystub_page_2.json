@@ -1,0 +1,52 @@
+{
+  "employee_name": "",
+  "employee_number": "",
+  "pay_period_end": "9/13/2025",
+  "stub_number": "D000123145",
+  "pay_rate": "",
+  "earnings": [],
+  "tax_deductions": [
+    {
+      "name": "Federal W/H",
+      "hours": null,
+      "amount": 42.87,
+      "ytd": 353.68
+    },
+    {
+      "name": "Social Security Tax",
+      "hours": null,
+      "amount": 42.4,
+      "ytd": 324.52
+    },
+    {
+      "name": "Medicare Tax",
+      "hours": null,
+      "amount": 9.92,
+      "ytd": 75.89
+    },
+    {
+      "name": "IAStateW/H",
+      "hours": null,
+      "amount": 17.0,
+      "ytd": 139.0
+    },
+    {
+      "name": "Chime",
+      "hours": null,
+      "amount": 571.76,
+      "ytd": 4341.13
+    }
+  ],
+  "deductions": [],
+  "direct_deposits": [
+    {
+      "name": "Chime",
+      "hours": null,
+      "amount": 571.76,
+      "ytd": 4341.13
+    }
+  ],
+  "gross_earnings": 683.95,
+  "net_earnings": 571.76,
+  "total_deductions": 112.19
+}

@@ -1,0 +1,46 @@
+{
+  "employee_name": "",
+  "employee_number": "",
+  "pay_period_end": "9/13/2025",
+  "stub_number": "D000123146",
+  "pay_rate": "",
+  "earnings": [],
+  "tax_deductions": [
+    {
+      "name": "Federal W/H",
+      "hours": null,
+      "amount": 90.22,
+      "ytd": 3700.61
+    },
+    {
+      "name": "Social Security Tax",
+      "hours": null,
+      "amount": 68.23,
+      "ytd": 2994.28
+    },
+    {
+      "name": "Medicare Tax",
+      "hours": null,
+      "amount": 15.96,
+      "ytd": 700.29
+    },
+    {
+      "name": "IAStateW/H",
+      "hours": null,
+      "amount": 31.0,
+      "ytd": 1300.0
+    }
+  ],
+  "deductions": [
+    {
+      "name": "Vision Member",
+      "hours": null,
+      "amount": 0.0,
+      "ytd": 82.8
+    }
+  ],
+  "direct_deposits": [],
+  "gross_earnings": 1100.5,
+  "net_earnings": 873.08,
+  "total_deductions": 227.42
+}

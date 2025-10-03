@@ -1,0 +1,1497 @@
+Using PDF: test-files/All_00-07_Paystubs.pdf
+============================================================
+PAYSTUB PROCESSING PIPELINE
+============================================================
+Opening PDF: test-files/All_00-07_Paystubs.pdf
+Processing 210 pages...
+Page 1: Extracted 834 characters
+Page 2: Extracted 1164 characters
+Page 3: Extracted 999 characters
+Page 4: Extracted 1268 characters
+Page 5: Extracted 983 characters
+Page 6: Extracted 1036 characters
+Page 7: Extracted 1020 characters
+Page 8: Extracted 1139 characters
+Page 9: Extracted 1108 characters
+Page 10: Extracted 1188 characters
+Page 11: Extracted 1041 characters
+Page 12: Extracted 1207 characters
+Page 13: Extracted 1004 characters
+Page 14: Extracted 1048 characters
+Page 15: Extracted 1048 characters
+Page 16: Extracted 862 characters
+Page 17: Extracted 1177 characters
+Page 18: Extracted 977 characters
+Page 19: Extracted 1000 characters
+Page 20: Extracted 1136 characters
+Page 21: Extracted 1017 characters
+Page 22: Extracted 966 characters
+Page 23: Extracted 968 characters
+Page 24: Extracted 850 characters
+Page 25: Extracted 1039 characters
+Page 26: Extracted 1037 characters
+Page 27: Extracted 996 characters
+Page 28: Extracted 967 characters
+Page 29: Extracted 887 characters
+Page 30: Extracted 941 characters
+Page 31: Extracted 995 characters
+Page 32: Extracted 1003 characters
+Page 33: Extracted 1090 characters
+Page 34: Extracted 1176 characters
+Page 35: Extracted 1104 characters
+Page 36: Extracted 884 characters
+Page 37: Extracted 719 characters
+Page 38: Extracted 1222 characters
+Page 39: Extracted 797 characters
+Page 40: Extracted 1100 characters
+Page 41: Extracted 957 characters
+Page 42: Extracted 1008 characters
+Page 43: Extracted 1098 characters
+Page 44: Extracted 1062 characters
+Page 45: Extracted 957 characters
+Page 46: Extracted 817 characters
+Page 47: Extracted 978 characters
+Page 48: Extracted 1074 characters
+Page 49: Extracted 1137 characters
+Page 50: Extracted 993 characters
+Page 51: Extracted 808 characters
+Page 52: Extracted 1167 characters
+Page 53: Extracted 949 characters
+Page 54: Extracted 1015 characters
+Page 55: Extracted 1038 characters
+Page 56: Extracted 1009 characters
+Page 57: Extracted 865 characters
+Page 58: Extracted 1009 characters
+Page 59: Extracted 1118 characters
+Page 60: Extracted 1036 characters
+Page 61: Extracted 950 characters
+Page 62: Extracted 1108 characters
+Page 63: Extracted 977 characters
+Page 64: Extracted 982 characters
+Page 65: Extracted 906 characters
+Page 66: Extracted 1069 characters
+Page 67: Extracted 1008 characters
+Page 68: Extracted 1156 characters
+Page 69: Extracted 918 characters
+Page 70: Extracted 1122 characters
+Page 71: Extracted 982 characters
+Page 72: Extracted 1110 characters
+Page 73: Extracted 996 characters
+Page 74: Extracted 818 characters
+Page 75: Extracted 1039 characters
+Page 76: Extracted 1119 characters
+Page 77: Extracted 940 characters
+Page 78: Extracted 1111 characters
+Page 79: Extracted 848 characters
+Page 80: Extracted 840 characters
+Page 81: Extracted 946 characters
+Page 82: Extracted 1220 characters
+Page 83: Extracted 1118 characters
+Page 84: Extracted 1068 characters
+Page 85: Extracted 1035 characters
+Page 86: Extracted 1104 characters
+Page 87: Extracted 1123 characters
+Page 88: Extracted 739 characters
+Page 89: Extracted 1135 characters
+Page 90: Extracted 1001 characters
+Page 91: Extracted 995 characters
+Page 92: Extracted 985 characters
+Page 93: Extracted 1018 characters
+Page 94: Extracted 1151 characters
+Page 95: Extracted 1169 characters
+Page 96: Extracted 963 characters
+Page 97: Extracted 1064 characters
+Page 98: Extracted 1054 characters
+Page 99: Extracted 913 characters
+Page 100: Extracted 991 characters
+Page 101: Extracted 825 characters
+Page 102: Extracted 1101 characters
+Page 103: Extracted 1025 characters
+Page 104: Extracted 948 characters
+Page 105: Extracted 1146 characters
+Page 106: Extracted 1093 characters
+Page 107: Extracted 742 characters
+Page 108: Extracted 811 characters
+Page 109: Extracted 1230 characters
+Page 110: Extracted 1114 characters
+Page 111: Extracted 1009 characters
+Page 112: Extracted 1044 characters
+Page 113: Extracted 1004 characters
+Page 114: Extracted 1051 characters
+Page 115: Extracted 1052 characters
+Page 116: Extracted 1252 characters
+Page 117: Extracted 1060 characters
+Page 118: Extracted 952 characters
+Page 119: Extracted 1015 characters
+Page 120: Extracted 1019 characters
+Page 121: Extracted 851 characters
+Page 122: Extracted 1016 characters
+Page 123: Extracted 988 characters
+Page 124: Extracted 1120 characters
+Page 125: Extracted 1187 characters
+Page 126: Extracted 1164 characters
+Page 127: Extracted 1024 characters
+Page 128: Extracted 1169 characters
+Page 129: Extracted 1109 characters
+Page 130: Extracted 972 characters
+Page 131: Extracted 1186 characters
+Page 132: Extracted 1067 characters
+Page 133: Extracted 808 characters
+Page 134: Extracted 1102 characters
+Page 135: Extracted 930 characters
+Page 136: Extracted 1131 characters
+Page 137: Extracted 1228 characters
+Page 138: Extracted 1201 characters
+Page 139: Extracted 1042 characters
+Page 140: Extracted 1176 characters
+Page 141: Extracted 1004 characters
+Page 142: Extracted 907 characters
+Page 143: Extracted 983 characters
+Page 144: Extracted 1105 characters
+Page 145: Extracted 1050 characters
+Page 146: Extracted 1038 characters
+Page 147: Extracted 1093 characters
+Page 148: Extracted 1044 characters
+Page 149: Extracted 990 characters
+Page 150: Extracted 800 characters
+Page 151: Extracted 929 characters
+Page 152: Extracted 1012 characters
+Page 153: Extracted 955 characters
+Page 154: Extracted 996 characters
+Page 155: Extracted 1039 characters
+Page 156: Extracted 1089 characters
+Page 157: Extracted 986 characters
+Page 158: Extracted 1136 characters
+Page 159: Extracted 1066 characters
+Page 160: Extracted 1218 characters
+Page 161: Extracted 989 characters
+Page 162: Extracted 1171 characters
+Page 163: Extracted 932 characters
+Page 164: Extracted 1126 characters
+Page 165: Extracted 961 characters
+Page 166: Extracted 861 characters
+Page 167: Extracted 949 characters
+Page 168: Extracted 1132 characters
+Page 169: Extracted 850 characters
+Page 170: Extracted 972 characters
+Page 171: Extracted 973 characters
+Page 172: Extracted 1112 characters
+Page 173: Extracted 1163 characters
+Page 174: Extracted 955 characters
+Page 175: Extracted 1053 characters
+Page 176: Extracted 1116 characters
+Page 177: Extracted 1054 characters
+Page 178: Extracted 1058 characters
+Page 179: Extracted 953 characters
+Page 180: Extracted 951 characters
+Page 181: Extracted 782 characters
+Page 182: Extracted 1228 characters
+Page 183: Extracted 993 characters
+Page 184: Extracted 1033 characters
+Page 185: Extracted 1083 characters
+Page 186: Extracted 931 characters
+Page 187: Extracted 864 characters
+Page 188: Extracted 1250 characters
+Page 189: Extracted 963 characters
+Page 190: Extracted 1020 characters
+Page 191: Extracted 1180 characters
+Page 192: Extracted 1166 characters
+Page 193: Extracted 1007 characters
+Page 194: Extracted 834 characters
+Page 195: Extracted 1148 characters
+Page 196: Extracted 1064 characters
+Page 197: Extracted 826 characters
+Page 198: Extracted 1051 characters
+Page 199: Extracted 1014 characters
+Page 200: Extracted 971 characters
+Page 201: Extracted 1125 characters
+Page 202: Extracted 875 characters
+Page 203: Extracted 1131 characters
+Page 204: Extracted 1097 characters
+Page 205: Extracted 1132 characters
+Page 206: Extracted 1008 characters
+Page 207: Extracted 879 characters
+Page 208: Extracted 974 characters
+Page 209: Extracted 953 characters
+Page 210: Extracted 1044 characters
+
+Processing 210 pages...
+
+Processing page 1...
+Page 1: Employee - Engels R. Acosta Rostran (00-AER)
+Page 1: Found 3 earnings items
+Page 1: Found 4 tax deductions items
+Page 1: Found 0 deductions items
+
+Processing page 2...
+Page 2: Employee - Nhicolas A. Aponte Flores (00-ANA)
+Page 2: Found 6 earnings items
+Page 2: Found 4 tax deductions items
+Page 2: Found 6 deductions items
+
+Processing page 3...
+Page 3: Employee - Ramon Abreu Sanchez (00-ASR)
+Page 3: Found 4 earnings items
+Page 3: Found 4 tax deductions items
+Page 3: Found 4 deductions items
+
+Processing page 4...
+Page 4: Employee - Ureka N. Arceneaux (00-AUN)
+Page 4: Found 6 earnings items
+Page 4: Found 4 tax deductions items
+Page 4: Found 10 deductions items
+
+Processing page 5...
+Page 5: Employee - Austin M. Botke (00-BA1)
+Page 5: Found 6 earnings items
+Page 5: Found 4 tax deductions items
+Page 5: Found 1 deductions items
+
+Processing page 6...
+Page 6: Employee - Aaron D. Barth (00-BAA)
+Page 6: Found 5 earnings items
+Page 6: Found 4 tax deductions items
+Page 6: Found 2 deductions items
+
+Processing page 7...
+Page 7: Employee - Bradley A. Burger (00-BBR)
+Page 7: Found 5 earnings items
+Page 7: Found 4 tax deductions items
+Page 7: Found 3 deductions items
+
+Processing page 8...
+Page 8: Employee - Christopher B. Bolen Jr. (00-BC1)
+Page 8: Found 7 earnings items
+Page 8: Found 4 tax deductions items
+Page 8: Found 5 deductions items
+
+Processing page 9...
+Page 9: Employee - Hanzel S. Busot (00-BHS)
+Page 9: Found 5 earnings items
+Page 9: Found 4 tax deductions items
+Page 9: Found 6 deductions items
+
+Processing page 10...
+Page 10: Employee - James G. Beckman (00-BJG)
+Page 10: Found 6 earnings items
+Page 10: Found 4 tax deductions items
+Page 10: Found 7 deductions items
+
+Processing page 11...
+Page 11: Employee - Jacob P. Hodges (00-BJP)
+Page 11: Found 5 earnings items
+Page 11: Found 4 tax deductions items
+Page 11: Found 3 deductions items
+
+Processing page 12...
+Page 12: Employee - Jeremy V. Brown (00-BJV)
+Page 12: Found 5 earnings items
+Page 12: Found 4 tax deductions items
+Page 12: Found 9 deductions items
+
+Processing page 13...
+Page 13: Employee - Kenneth N. Burris (00-BKN)
+Page 13: Found 5 earnings items
+Page 13: Found 4 tax deductions items
+Page 13: Found 3 deductions items
+
+Processing page 14...
+Page 14: Employee - Michael A. Banks (00-BMA)
+Page 14: Found 5 earnings items
+Page 14: Found 4 tax deductions items
+Page 14: Found 4 deductions items
+
+Processing page 15...
+Page 15: Employee - Michael L. Budden (00-BMC)
+Page 15: Found 7 earnings items
+Page 15: Found 4 tax deductions items
+Page 15: Found 2 deductions items
+
+Processing page 16...
+Page 16: Employee - Noah I. Barron (00-BNI)
+Page 16: Found 3 earnings items
+Page 16: Found 4 tax deductions items
+Page 16: Found 1 deductions items
+
+Processing page 17...
+Page 17: Employee - Terry G. Beyer (00-BTG)
+Page 17: Found 7 earnings items
+Page 17: Found 4 tax deductions items
+Page 17: Found 5 deductions items
+
+Processing page 18...
+Page 18: Employee - Alexis M. Capo (00-CAA)
+Page 18: Found 5 earnings items
+Page 18: Found 4 tax deductions items
+Page 18: Found 2 deductions items
+
+Processing page 19...
+Page 19: Employee - Christopher O. Crotchett (00-CC2)
+Page 19: Found 5 earnings items
+Page 19: Found 4 tax deductions items
+Page 19: Found 3 deductions items
+
+Processing page 20...
+Page 20: Employee - Curtis J. Childs (00-CCY)
+Page 20: Found 5 earnings items
+Page 20: Found 4 tax deductions items
+Page 20: Found 6 deductions items
+
+Processing page 21...
+Page 21: Employee - Donavan D. Christian (00-CDO)
+Page 21: Found 5 earnings items
+Page 21: Found 4 tax deductions items
+Page 21: Found 3 deductions items
+
+Processing page 22...
+Page 22: Employee - Elvin J. Calix Santos (00-CEJ)
+Page 22: Found 5 earnings items
+Page 22: Found 4 tax deductions items
+Page 22: Found 1 deductions items
+
+Processing page 23...
+Page 23: Employee - Glenn B. Cook (00-CGB)
+Page 23: Found 4 earnings items
+Page 23: Found 4 tax deductions items
+Page 23: Found 2 deductions items
+
+Processing page 24...
+Page 24: Employee - Jesus Carrales (00-CJ3)
+Page 24: Found 5 earnings items
+Page 24: Found 4 tax deductions items
+Page 24: Found 0 deductions items
+
+Processing page 25...
+Page 25: Employee - Michael A. Curnew (00-CMI)
+Page 25: Found 5 earnings items
+Page 25: Found 4 tax deductions items
+Page 25: Found 4 deductions items
+
+Processing page 26...
+Page 26: Employee - Mandy K. Campbell (00-CMK)
+Page 26: Found 4 earnings items
+Page 26: Found 4 tax deductions items
+Page 26: Found 6 deductions items
+
+Processing page 27...
+Page 27: Employee - Alexander Cruz-Oyola (00-COA)
+Page 27: Found 5 earnings items
+Page 27: Found 4 tax deductions items
+Page 27: Found 2 deductions items
+
+Processing page 28...
+Page 28: Employee - Raymundo H. Corea (00-CRH)
+Page 28: Found 4 earnings items
+Page 28: Found 4 tax deductions items
+Page 28: Found 3 deductions items
+
+Processing page 29...
+Page 29: Employee - Stan T. Curley (00-CST)
+Page 29: Found 3 earnings items
+Page 29: Found 4 tax deductions items
+Page 29: Found 1 deductions items
+
+Processing page 30...
+Page 30: Employee - Teara M. Covington (00-CT2)
+Page 30: Found 4 earnings items
+Page 30: Found 3 tax deductions items
+Page 30: Found 3 deductions items
+
+Processing page 31...
+Page 31: Employee - Timothy K. Cramer (00-CTK)
+Page 31: Found 5 earnings items
+Page 31: Found 4 tax deductions items
+Page 31: Found 3 deductions items
+
+Processing page 32...
+Page 32: Employee - Drake A. Swartz (00-DAS)
+Page 32: Found 6 earnings items
+Page 32: Found 4 tax deductions items
+Page 32: Found 2 deductions items
+
+Processing page 33...
+Page 33: Employee - Dalton J. De Boer (00-DDT)
+Page 33: Found 5 earnings items
+Page 33: Found 4 tax deductions items
+Page 33: Found 4 deductions items
+
+Processing page 34...
+Page 34: Employee - Jody L. Dardenne (00-DJ2)
+Page 34: Found 5 earnings items
+Page 34: Found 4 tax deductions items
+Page 34: Found 7 deductions items
+
+Processing page 35...
+Page 35: Employee - Jessica N. Davis (00-DJN)
+Page 35: Found 6 earnings items
+Page 35: Found 4 tax deductions items
+Page 35: Found 4 deductions items
+
+Processing page 36...
+Page 36: Employee - Mary E. Draughon (00-DME)
+Page 36: Found 3 earnings items
+Page 36: Found 4 tax deductions items
+Page 36: Found 2 deductions items
+
+Processing page 37...
+Page 37: Employee - Robert D. Detimore (00-DR3)
+Page 37: Found 1 earnings items
+Page 37: Found 2 tax deductions items
+Page 37: Found 1 deductions items
+
+Processing page 38...
+Page 38: Employee - Ricky A. Davis (00-DRA)
+Page 38: Found 6 earnings items
+Page 38: Found 4 tax deductions items
+Page 38: Found 4 deductions items
+
+Processing page 39...
+Page 39: Employee - Randal C. Dunlap (00-DRC)
+Page 39: Found 3 earnings items
+Page 39: Found 4 tax deductions items
+Page 39: Found 0 deductions items
+
+Processing page 40...
+Page 40: Employee - Roger L. Diederich (00-DRG)
+Page 40: Found 6 earnings items
+Page 40: Found 4 tax deductions items
+Page 40: Found 4 deductions items
+
+Processing page 41...
+Page 41: Employee - Richard C. Dulaney (00-DRI)
+Page 41: Found 5 earnings items
+Page 41: Found 4 tax deductions items
+Page 41: Found 1 deductions items
+
+Processing page 42...
+Page 42: Employee - Zachery A. DeMercurio (00-DZA)
+Page 42: Found 5 earnings items
+Page 42: Found 4 tax deductions items
+Page 42: Found 2 deductions items
+
+Processing page 43...
+Page 43: Employee - Douglas D. Engle (00-EDD)
+Page 43: Found 5 earnings items
+Page 43: Found 4 tax deductions items
+Page 43: Found 6 deductions items
+
+Processing page 44...
+Page 44: Employee - Julian A. Espinosa (00-EJA)
+Page 44: Found 7 earnings items
+Page 44: Found 3 tax deductions items
+Page 44: Found 4 deductions items
+
+Processing page 45...
+Page 45: Employee - Jonathan C. Edwards (00-EJC)
+Page 45: Found 4 earnings items
+Page 45: Found 4 tax deductions items
+Page 45: Found 2 deductions items
+
+Processing page 46...
+Page 46: Employee - Kathrine D. Essig (00-EKD)
+Page 46: Found 3 earnings items
+Page 46: Found 4 tax deductions items
+Page 46: Found 0 deductions items
+
+Processing page 47...
+Page 47: Employee - Robert A. Elwell (0O-ER2)
+Page 47: Found 5 earnings items
+Page 47: Found 4 tax deductions items
+Page 47: Found 2 deductions items
+
+Processing page 48...
+Page 48: Employee - Brian J. Fangman (00-FBJ)
+Page 48: Found 5 earnings items
+Page 48: Found 4 tax deductions items
+Page 48: Found 5 deductions items
+
+Processing page 49...
+Page 49: Employee - Christopher J. Foster (00-FCH)
+Page 49: Found 5 earnings items
+Page 49: Found 4 tax deductions items
+Page 49: Found 6 deductions items
+
+Processing page 50...
+Page 50: Employee - Nathaniel M. Ford (00-FNM)
+Page 50: Found 5 earnings items
+Page 50: Found 4 tax deductions items
+Page 50: Found 3 deductions items
+
+Processing page 51...
+Page 51: Employee - Oscar F. Flores Rodriguez (00-FOF)
+Page 51: Found 3 earnings items
+Page 51: Found 4 tax deductions items
+Page 51: Found 0 deductions items
+
+Processing page 52...
+Page 52: Employee - Oscar J. Flores Ulloa (00-FOJ)
+Page 52: Found 7 earnings items
+Page 52: Found 4 tax deductions items
+Page 52: Found 6 deductions items
+
+Processing page 53...
+Page 53: Employee - Matthew J. Fred (00-FRM)
+Page 53: Found 4 earnings items
+Page 53: Found 4 tax deductions items
+Page 53: Found 2 deductions items
+
+Processing page 54...
+Page 54: Employee - Allen D. Grunz (00-GAD)
+Page 54: Found 6 earnings items
+Page 54: Found 4 tax deductions items
+Page 54: Found 2 deductions items
+
+Processing page 55...
+Page 55: Employee - Darrell L. Goeken (00-GDL)
+Page 55: Found 5 earnings items
+Page 55: Found 4 tax deductions items
+Page 55: Found 3 deductions items
+
+Processing page 56...
+Page 56: Employee - Howard L. Goodman (00-GHL)
+Page 56: Found 5 earnings items
+Page 56: Found 4 tax deductions items
+Page 56: Found 3 deductions items
+
+Processing page 57...
+Page 57: Employee - Jacob M. Glaum (00-GJ2)
+Page 57: Found 4 earnings items
+Page 57: Found 4 tax deductions items
+Page 57: Found 0 deductions items
+
+Processing page 58...
+Page 58: Employee - Kevin Goff (00-GK)
+Page 58: Found 5 earnings items
+Page 58: Found 4 tax deductions items
+Page 58: Found 3 deductions items
+
+Processing page 59...
+Page 59: Employee - Mary N. Gatza (00-GMN)
+Page 59: Found 4 earnings items
+Page 59: Found 4 tax deductions items
+Page 59: Found 7 deductions items
+
+Processing page 60...
+Page 60: Employee - Nicholas C. Gehrer (00-GNC)
+Page 60: Found 4 earnings items
+Page 60: Found 4 tax deductions items
+Page 60: Found 4 deductions items
+
+Processing page 61...
+Page 61: Employee - Theodore H. Graf (00-GTH)
+Page 61: Found 5 earnings items
+Page 61: Found 4 tax deductions items
+Page 61: Found 1 deductions items
+
+Processing page 62...
+Page 62: Employee - Wesley J. Groninger (00-GWJ)
+Page 62: Found 5 earnings items
+Page 62: Found 4 tax deductions items
+Page 62: Found 6 deductions items
+
+Processing page 63...
+Page 63: Employee - Aaron G. Hoover (00-HAG)
+Page 63: Found 5 earnings items
+Page 63: Found 4 tax deductions items
+Page 63: Found 2 deductions items
+
+Processing page 64...
+Page 64: Employee - Colby A. Haukap (00-HC1)
+Page 64: Found 5 earnings items
+Page 64: Found 4 tax deductions items
+Page 64: Found 2 deductions items
+
+Processing page 65...
+Page 65: Employee - Colton M. Hannon (00-HC2)
+Page 65: Found 4 earnings items
+Page 65: Found 4 tax deductions items
+Page 65: Found 1 deductions items
+
+Processing page 66...
+Page 66: Employee - Dane L. Huff (00-HDL)
+Page 66: Found 4 earnings items
+Page 66: Found 4 tax deductions items
+Page 66: Found 6 deductions items
+
+Processing page 67...
+Page 67: Employee - Dustin W. Hamilton (00-HDW)
+Page 67: Found 5 earnings items
+Page 67: Found 4 tax deductions items
+Page 67: Found 3 deductions items
+
+Processing page 68...
+Page 68: Employee - Edward J. Hohmann (00-HEJ)
+Page 68: Found 7 earnings items
+Page 68: Found 4 tax deductions items
+Page 68: Found 5 deductions items
+
+Processing page 69...
+Page 69: Employee - Jose L. Hernandez Jr (00-HJ2)
+Page 69: Found 4 earnings items
+Page 69: Found 4 tax deductions items
+Page 69: Found 1 deductions items
+
+Processing page 70...
+Page 70: Employee - Kary E. Holopirek (00-HK)
+Page 70: Found 4 earnings items
+Page 70: Found 4 tax deductions items
+Page 70: Found 8 deductions items
+
+Processing page 71...
+Page 71: Employee - Kevin K. Hallowell (00-HKK)
+Page 71: Found 4 earnings items
+Page 71: Found 4 tax deductions items
+Page 71: Found 3 deductions items
+
+Processing page 72...
+Page 72: Employee - Kendal R. Howard (00-HKR)
+Page 72: Found 6 earnings items
+Page 72: Found 4 tax deductions items
+Page 72: Found 5 deductions items
+
+Processing page 73...
+Page 73: Employee - Mark J. Howell (00-HMK)
+Page 73: Found 5 earnings items
+Page 73: Found 4 tax deductions items
+Page 73: Found 2 deductions items
+
+Processing page 74...
+Page 74: Employee - Michael P. Hays (00-HMP)
+Page 74: Found 3 earnings items
+Page 74: Found 4 tax deductions items
+Page 74: Found 0 deductions items
+
+Processing page 75...
+Page 75: Employee - Michael W. Henthorn (00-HMW)
+Page 75: Found 5 earnings items
+Page 75: Found 4 tax deductions items
+Page 75: Found 3 deductions items
+
+Processing page 76...
+Page 76: Employee - Stacy E. Harper (00-HSE)
+Page 76: Found 7 earnings items
+Page 76: Found 4 tax deductions items
+Page 76: Found 5 deductions items
+
+Processing page 77...
+Page 77: Employee - Shawn P. Hall (00-HSP)
+Page 77: Found 5 earnings items
+Page 77: Found 4 tax deductions items
+Page 77: Found 2 deductions items
+
+Processing page 78...
+Page 78: Employee - Timothy D. Herrs (00-HTI)
+Page 78: Found 6 earnings items
+Page 78: Found 4 tax deductions items
+Page 78: Found 5 deductions items
+
+Processing page 79...
+Page 79: Employee - Tariq H. Ismail (00-ITH)
+Page 79: Found 4 earnings items
+Page 79: Found 4 tax deductions items
+Page 79: Found 0 deductions items
+
+Processing page 80...
+Page 80: Employee - Benjamin C. Johnson (00-JBC)
+Page 80: Found 3 earnings items
+Page 80: Found 4 tax deductions items
+Page 80: Found 1 deductions items
+
+Processing page 81...
+Page 81: Employee - Christopher Jones (00-JCA)
+Page 81: Found 4 earnings items
+Page 81: Found 4 tax deductions items
+Page 81: Found 2 deductions items
+
+Processing page 82...
+Page 82: Employee - Earl B. Jennings (00-JEB)
+Page 82: Found 6 earnings items
+Page 82: Found 4 tax deductions items
+Page 82: Found 8 deductions items
+
+Processing page 83...
+Page 83: Employee - Jermaine T. Jones (00-JJT)
+Page 83: Found 7 earnings items
+Page 83: Found 4 tax deductions items
+Page 83: Found 3 deductions items
+
+Processing page 84...
+Page 84: Employee - Richard C. Johnson (00-JRC)
+Page 84: Found 5 earnings items
+Page 84: Found 4 tax deductions items
+Page 84: Found 4 deductions items
+
+Processing page 85...
+Page 85: Employee - Stephan G. Johannes (00-JSG)
+Page 85: Found 4 earnings items
+Page 85: Found 4 tax deductions items
+Page 85: Found 5 deductions items
+
+Processing page 86...
+Page 86: Employee - Thomas R. Jordan (00-JTR)
+Page 86: Found 5 earnings items
+Page 86: Found 4 tax deductions items
+Page 86: Found 6 deductions items
+
+Processing page 87...
+Page 87: Employee - TylerW. James (00-JTW)
+Page 87: Found 5 earnings items
+Page 87: Found 4 tax deductions items
+Page 87: Found 7 deductions items
+
+Processing page 88...
+Page 88: Employee - Brandie L. Klemme (00-KBL)
+Page 88: Found 1 earnings items
+Page 88: Found 4 tax deductions items
+Page 88: Found 0 deductions items
+
+Processing page 89...
+Page 89: Employee - Daniel R. Kidd (00-KDR)
+Page 89: Found 5 earnings items
+Page 89: Found 4 tax deductions items
+Page 89: Found 6 deductions items
+
+Processing page 90...
+Page 90: Employee - Justin J. Klozenbucher (00-KJJ)
+Page 90: Found 5 earnings items
+Page 90: Found 4 tax deductions items
+Page 90: Found 2 deductions items
+
+Processing page 91...
+Page 91: Employee - Johnathon L. Kemp (00-KJL)
+Page 91: Found 4 earnings items
+Page 91: Found 4 tax deductions items
+Page 91: Found 3 deductions items
+
+Processing page 92...
+Page 92: Employee - Keith A. Ketterl (00-KKA)
+Page 92: Found 5 earnings items
+Page 92: Found 4 tax deductions items
+Page 92: Found 2 deductions items
+
+Processing page 93...
+Page 93: Employee - Kyle M. Keelty (00-KKM)
+Page 93: Found 4 earnings items
+Page 93: Found 4 tax deductions items
+Page 93: Found 5 deductions items
+
+Processing page 94...
+Page 94: Employee - Michael K. Kifer (00-KMK)
+Page 94: Found 5 earnings items
+Page 94: Found 4 tax deductions items
+Page 94: Found 7 deductions items
+
+Processing page 95...
+Page 95: Employee - Paul L. Kleinkauf (00-KPL)
+Page 95: Found 9 earnings items
+Page 95: Found 4 tax deductions items
+Page 95: Found 2 deductions items
+
+Processing page 96...
+Page 96: Employee - Rex L. Kreie III (00-KR1)
+Page 96: Found 5 earnings items
+Page 96: Found 4 tax deductions items
+Page 96: Found 2 deductions items
+
+Processing page 97...
+Page 97: Employee - Rylie M. Knox (00-KRM)
+Page 97: Found 4 earnings items
+Page 97: Found 4 tax deductions items
+Page 97: Found 6 deductions items
+
+Processing page 98...
+Page 98: Employee - Ryan N. Keelty (00-KRN)
+Page 98: Found 7 earnings items
+Page 98: Found 4 tax deductions items
+Page 98: Found 2 deductions items
+
+Processing page 99...
+Page 99: Employee - Simon J. Kenney (00-KSJ)
+Page 99: Found 4 earnings items
+Page 99: Found 4 tax deductions items
+Page 99: Found 1 deductions items
+
+Processing page 100...
+Page 100: Employee - Sherry L. Kunkel (00-KSL)
+Page 100: Found 4 earnings items
+Page 100: Found 4 tax deductions items
+Page 100: Found 4 deductions items
+
+Processing page 101...
+Page 101: Employee - Dayetzon D. Leon Tinoco (00-LDD)
+Page 101: Found 3 earnings items
+Page 101: Found 4 tax deductions items
+Page 101: Found 0 deductions items
+
+Processing page 102...
+Page 102: Employee - Devon T. Lockwood (00-LDT)
+Page 102: Found 6 earnings items
+Page 102: Found 4 tax deductions items
+Page 102: Found 5 deductions items
+
+Processing page 103...
+Page 103: Employee - Elsi D. Lopez Ramirez (00-LED)
+Page 103: Found 6 earnings items
+Page 103: Found 4 tax deductions items
+Page 103: Found 2 deductions items
+
+Processing page 104...
+Page 104: Employee - Francisco D. Leon Rodriguez (00-LFD)
+Page 104: Found 6 earnings items
+Page 104: Found 3 tax deductions items
+Page 104: Found 1 deductions items
+
+Processing page 105...
+Page 105: Employee - Jeanette S. Lowe (00-LJN)
+Page 105: Found 5 earnings items
+Page 105: Found 4 tax deductions items
+Page 105: Found 7 deductions items
+
+Processing page 106...
+Page 106: Employee - Keith A. Lindley (00-LKA)
+Page 106: Found 5 earnings items
+Page 106: Found 4 tax deductions items
+Page 106: Found 5 deductions items
+
+Processing page 107...
+Page 107: Employee - Lawrence Porter III (00-LP3)
+Page 107: Found 1 earnings items
+Page 107: Found 4 tax deductions items
+Page 107: Found 0 deductions items
+
+Processing page 108...
+Page 108: Employee - Robert C. Locke (00-LR2)
+Page 108: Found 3 earnings items
+Page 108: Found 4 tax deductions items
+Page 108: Found 0 deductions items
+
+Processing page 109...
+Page 109: Employee - Scott C. Long (00-LSC)
+Page 109: Found 8 earnings items
+Page 109: Found 4 tax deductions items
+Page 109: Found 5 deductions items
+
+Processing page 110...
+Page 110: Employee - William H. Lansing, Ill (00-LWH)
+Page 110: Found 6 earnings items
+Page 110: Found 4 tax deductions items
+Page 110: Found 5 deductions items
+
+Processing page 111...
+Page 111: Employee - Amy E. Medley (00-MAE)
+Page 111: Found 5 earnings items
+Page 111: Found 4 tax deductions items
+Page 111: Found 2 deductions items
+
+Processing page 112...
+Page 112: Employee - Alexis I. Munguia (00-MAX)
+Page 112: Found 5 earnings items
+Page 112: Found 4 tax deductions items
+Page 112: Found 3 deductions items
+
+Processing page 113...
+Page 113: Employee - Ewduart Montoya (00-ME1)
+Page 113: Found 4 earnings items
+Page 113: Found 4 tax deductions items
+Page 113: Found 5 deductions items
+
+Processing page 114...
+Page 114: Employee - Eric D. Morin (00-MED)
+Page 114: Found 5 earnings items
+Page 114: Found 4 tax deductions items
+Page 114: Found 4 deductions items
+
+Processing page 115...
+Page 115: Employee - Jacob R. Mark (00-MJ5)
+Page 115: Found 6 earnings items
+Page 115: Found 3 tax deductions items
+Page 115: Found 4 deductions items
+
+Processing page 116...
+Page 116: Employee - Joshua T. Mercado (00-MJU)
+Page 116: Found 7 earnings items
+Page 116: Found 4 tax deductions items
+Page 116: Found 9 deductions items
+
+Processing page 117...
+Page 117: Employee - Kiernan W. McAllister (00-MKW)
+Page 117: Found 5 earnings items
+Page 117: Found 4 tax deductions items
+Page 117: Found 4 deductions items
+
+Processing page 118...
+Page 118: Employee - Leonard C. Myers Jr (00-MLC1)
+Page 118: Found 5 earnings items
+Page 118: Found 4 tax deductions items
+Page 118: Found 1 deductions items
+
+Processing page 119...
+Page 119: Employee - Larry E. McIntyre (00-MLE)
+Page 119: Found 5 earnings items
+Page 119: Found 4 tax deductions items
+Page 119: Found 4 deductions items
+
+Processing page 120...
+Page 120: Employee - Lucas E. McIntyre (00-MLU)
+Page 120: Found 5 earnings items
+Page 120: Found 4 tax deductions items
+Page 120: Found 3 deductions items
+
+Processing page 121...
+Page 121: Employee - Ma Raquel Medina Molina (00-MM2)
+Page 121: Found 3 earnings items
+Page 121: Found 4 tax deductions items
+Page 121: Found 1 deductions items
+
+Processing page 122...
+Page 122: Employee - Nancy K. Moffett (00-MNK)
+Page 122: Found 5 earnings items
+Page 122: Found 4 tax deductions items
+Page 122: Found 3 deductions items
+
+Processing page 123...
+Page 123: Employee - Felix Meran Pena (00-MPF)
+Page 123: Found 5 earnings items
+Page 123: Found 4 tax deductions items
+Page 123: Found 4 deductions items
+
+Processing page 124...
+Page 124: Employee - Richard S. McKellips (00-MRI)
+Page 124: Found 5 earnings items
+Page 124: Found 4 tax deductions items
+Page 124: Found 6 deductions items
+
+Processing page 125...
+Page 125: Employee - Rafael Martinez, Jr (00-MRJ)
+Page 125: Found 7 earnings items
+Page 125: Found 4 tax deductions items
+Page 125: Found 6 deductions items
+
+Processing page 126...
+Page 126: Employee - Ronald W. Marts, II (00-MRO)
+Page 126: Found 6 earnings items
+Page 126: Found 4 tax deductions items
+Page 126: Found 6 deductions items
+
+Processing page 127...
+Page 127: Employee - Leon S. McClain (00-MSL)
+Page 127: Found 5 earnings items
+Page 127: Found 4 tax deductions items
+Page 127: Found 3 deductions items
+
+Processing page 128...
+Page 128: Employee - Shawn P. Millard (00-MSP)
+Page 128: Found 4 earnings items
+Page 128: Found 4 tax deductions items
+Page 128: Found 7 deductions items
+
+Processing page 129...
+Page 129: Employee - Tina M. McIntyre (00-MTM)
+Page 129: Found 5 earnings items
+Page 129: Found 4 tax deductions items
+Page 129: Found 5 deductions items
+
+Processing page 130...
+Page 130: Employee - Tyrone S. Mays (00-MTS)
+Page 130: Found 5 earnings items
+Page 130: Found 3 tax deductions items
+Page 130: Found 3 deductions items
+
+Processing page 131...
+Page 131: Employee - Jeramie J. Novack (00-NJE)
+Page 131: Found 5 earnings items
+Page 131: Found 4 tax deductions items
+Page 131: Found 7 deductions items
+
+Processing page 132...
+Page 132: Employee - Kip W. Niswanger (00-NKW)
+Page 132: Found 6 earnings items
+Page 132: Found 4 tax deductions items
+Page 132: Found 3 deductions items
+
+Processing page 133...
+Page 133: Employee - Alec P. Ogorzolka (0O-OA2)
+Page 133: Found 3 earnings items
+Page 133: Found 4 tax deductions items
+Page 133: Found 0 deductions items
+
+Processing page 134...
+Page 134: Employee - Robert W. Ott (00-ORW)
+Page 134: Found 6 earnings items
+Page 134: Found 4 tax deductions items
+Page 134: Found 2 deductions items
+
+Processing page 135...
+Page 135: Employee - Dylan J. Pierce (00-PDJ)
+Page 135: Found 6 earnings items
+Page 135: Found 4 tax deductions items
+Page 135: Found 0 deductions items
+
+Processing page 136...
+Page 136: Employee - Eric J. Parish (00-PE)
+Page 136: Found 6 earnings items
+Page 136: Found 4 tax deductions items
+Page 136: Found 6 deductions items
+
+Processing page 137...
+Page 137: Employee - Juan C. Perez (00-PJC)
+Page 137: Found 9 earnings items
+Page 137: Found 4 tax deductions items
+Page 137: Found 4 deductions items
+
+Processing page 138...
+Page 138: Employee - James M. Peterson (00-PJS)
+Page 138: Found 7 earnings items
+Page 138: Found 4 tax deductions items
+Page 138: Found 6 deductions items
+
+Processing page 139...
+Page 139: Employee - Augusta T. Reed (00-RAT)
+Page 139: Found 5 earnings items
+Page 139: Found 4 tax deductions items
+Page 139: Found 4 deductions items
+
+Processing page 140...
+Page 140: Employee - Antoine Y. Revada (00-RAY)
+Page 140: Found 6 earnings items
+Page 140: Found 4 tax deductions items
+Page 140: Found 6 deductions items
+
+Processing page 141...
+Page 141: Employee - Curtis D. Ross (00-RCD)
+Page 141: Found 5 earnings items
+Page 141: Found 4 tax deductions items
+Page 141: Found 3 deductions items
+
+Processing page 142...
+Page 142: Employee - David A. Raseta (00-RD1)
+Page 142: Found 5 earnings items
+Page 142: Found 4 tax deductions items
+Page 142: Found 0 deductions items
+
+Processing page 143...
+Page 143: Employee - Derek A. Richter (00-RDE)
+Page 143: Found 4 earnings items
+Page 143: Found 4 tax deductions items
+Page 143: Found 4 deductions items
+
+Processing page 144...
+Page 144: Employee - lneslys Reyno Delgado (00-RDI)
+Page 144: Found 5 earnings items
+Page 144: Found 4 tax deductions items
+Page 144: Found 5 deductions items
+
+Processing page 145...
+Page 145: Employee - Dimas T. Rivas (00-RDT)
+Page 145: Found 5 earnings items
+Page 145: Found 4 tax deductions items
+Page 145: Found 4 deductions items
+
+Processing page 146...
+Page 146: Employee - Francis O. Rostran Rayo (00-RFO)
+Page 146: Found 5 earnings items
+Page 146: Found 4 tax deductions items
+Page 146: Found 3 deductions items
+
+Processing page 147...
+Page 147: Employee - Jiuwher I. Rostran Dubon (00-RJ1)
+Page 147: Found 6 earnings items
+Page 147: Found 4 tax deductions items
+Page 147: Found 3 deductions items
+
+Processing page 148...
+Page 148: Employee - Juan D. Ramirez Rodriguez (00-RJD)
+Page 148: Found 5 earnings items
+Page 148: Found 3 tax deductions items
+Page 148: Found 5 deductions items
+
+Processing page 149...
+Page 149: Employee - Luis P. Ramirez Chamale (00-RLP)
+Page 149: Found 5 earnings items
+Page 149: Found 3 tax deductions items
+Page 149: Found 3 deductions items
+
+Processing page 150...
+Page 150: Employee - Mario L. Russell (00-RM1)
+Page 150: Found 3 earnings items
+Page 150: Found 4 tax deductions items
+Page 150: Found 0 deductions items
+
+Processing page 151...
+Page 151: Employee - Maykeling D. Rostran Medina (00-RMD)
+Page 151: Found 4 earnings items
+Page 151: Found 4 tax deductions items
+Page 151: Found 2 deductions items
+
+Processing page 152...
+Page 152: Employee - Maria I. Ramirez Palma (00-RPM)
+Page 152: Found 5 earnings items
+Page 152: Found 4 tax deductions items
+Page 152: Found 2 deductions items
+
+Processing page 153...
+Page 153: Employee - Regan D. Reves (00-RRG)
+Page 153: Found 4 earnings items
+Page 153: Found 4 tax deductions items
+Page 153: Found 3 deductions items
+
+Processing page 154...
+Page 154: Employee - Timothy L. Redmann (00-RTL)
+Page 154: Found 5 earnings items
+Page 154: Found 4 tax deductions items
+Page 154: Found 3 deductions items
+
+Processing page 155...
+Page 155: Employee - Anthony J. Smith (00-SA2)
+Page 155: Found 5 earnings items
+Page 155: Found 4 tax deductions items
+Page 155: Found 5 deductions items
+
+Processing page 156...
+Page 156: Employee - Antonious L. Spiller (00-SAL)
+Page 156: Found 6 earnings items
+Page 156: Found 4 tax deductions items
+Page 156: Found 4 deductions items
+
+Processing page 157...
+Page 157: Employee - Anthony J. Scantlin (00-SAT)
+Page 157: Found 5 earnings items
+Page 157: Found 4 tax deductions items
+Page 157: Found 2 deductions items
+
+Processing page 158...
+Page 158: Employee - Daniel Santos Cruz (00-SCD)
+Page 158: Found 6 earnings items
+Page 158: Found 4 tax deductions items
+Page 158: Found 5 deductions items
+
+Processing page 159...
+Page 159: Employee - Dawn R. Sinn (00-SDR)
+Page 159: Found 4 earnings items
+Page 159: Found 4 tax deductions items
+Page 159: Found 6 deductions items
+
+Processing page 160...
+Page 160: Employee - Darin S. Strathman (00-SDS)
+Page 160: Found 6 earnings items
+Page 160: Found 4 tax deductions items
+Page 160: Found 7 deductions items
+
+Processing page 161...
+Page 161: Employee - James N. Sommer (00-SJN)
+Page 161: Found 5 earnings items
+Page 161: Found 4 tax deductions items
+Page 161: Found 2 deductions items
+
+Processing page 162...
+Page 162: Employee - JoelT.Scheuerman (00-SJT)
+Page 162: Found 9 earnings items
+Page 162: Found 4 tax deductions items
+Page 162: Found 4 deductions items
+
+Processing page 163...
+Page 163: Employee - Michael L. Smith (00-SM3)
+Page 163: Found 4 earnings items
+Page 163: Found 4 tax deductions items
+Page 163: Found 2 deductions items
+
+Processing page 164...
+Page 164: Employee - Michael A. Sultz (00-SMA)
+Page 164: Found 5 earnings items
+Page 164: Found 4 tax deductions items
+Page 164: Found 6 deductions items
+
+Processing page 165...
+Page 165: Employee - Richard Smith (00-SR)
+Page 165: Found 5 earnings items
+Page 165: Found 4 tax deductions items
+Page 165: Found 2 deductions items
+
+Processing page 166...
+Page 166: Employee - Ray A. Stephenson (00-SRA)
+Page 166: Found 4 earnings items
+Page 166: Found 4 tax deductions items
+Page 166: Found 0 deductions items
+
+Processing page 167...
+Page 167: Employee - Scott R. Sauber (00-SSR)
+Page 167: Found 4 earnings items
+Page 167: Found 4 tax deductions items
+Page 167: Found 2 deductions items
+
+Processing page 168...
+Page 168: Employee - Titan E. Seyboth (00-STE)
+Page 168: Found 5 earnings items
+Page 168: Found 4 tax deductions items
+Page 168: Found 6 deductions items
+
+Processing page 169...
+Page 169: Employee - Alfonso M. Torres Andino (0O-TA2)
+Page 169: Found 4 earnings items
+Page 169: Found 4 tax deductions items
+Page 169: Found 0 deductions items
+
+Processing page 170...
+Page 170: Employee - Bryan E. Tillett (00-TBE)
+Page 170: Found 3 earnings items
+Page 170: Found 4 tax deductions items
+Page 170: Found 2 deductions items
+
+Processing page 171...
+Page 171: Employee - Donald R. Taylor, Ill (00-TDR)
+Page 171: Found 5 earnings items
+Page 171: Found 4 tax deductions items
+Page 171: Found 1 deductions items
+
+Processing page 172...
+Page 172: Employee - lkaika K. Tau'a (00-TIK)
+Page 172: Found 5 earnings items
+Page 172: Found 4 tax deductions items
+Page 172: Found 7 deductions items
+
+Processing page 173...
+Page 173: Employee - Karsten A. Thoren (00-TKA)
+Page 173: Found 5 earnings items
+Page 173: Found 4 tax deductions items
+Page 173: Found 8 deductions items
+
+Processing page 174...
+Page 174: Employee - Keanae A. Tau'a (00-TKE)
+Page 174: Found 4 earnings items
+Page 174: Found 4 tax deductions items
+Page 174: Found 3 deductions items
+
+Processing page 175...
+Page 175: Employee - Luzmila Tangarife Veloza (00-TL)
+Page 175: Found 5 earnings items
+Page 175: Found 3 tax deductions items
+Page 175: Found 5 deductions items
+
+Processing page 176...
+Page 176: Employee - Patosina Thurston (00-TP)
+Page 176: Found 5 earnings items
+Page 176: Found 4 tax deductions items
+Page 176: Found 7 deductions items
+
+Processing page 177...
+Page 177: Employee - Zachary Titterton (00-TWZ)
+Page 177: Found 4 earnings items
+Page 177: Found 4 tax deductions items
+Page 177: Found 5 deductions items
+
+Processing page 178...
+Page 178: Employee - Justin M. Van Vleet (00-VJM)
+Page 178: Found 6 earnings items
+Page 178: Found 4 tax deductions items
+Page 178: Found 3 deductions items
+
+Processing page 179...
+Page 179: Employee - Luis A. Vasquez (00-VLA)
+Page 179: Found 4 earnings items
+Page 179: Found 3 tax deductions items
+Page 179: Found 4 deductions items
+
+Processing page 180...
+Page 180: Employee - Vince D. Vinson (00-WD)
+Page 180: Found 5 earnings items
+Page 180: Found 4 tax deductions items
+Page 180: Found 1 deductions items
+
+Processing page 181...
+Page 181: Employee - Yasser M. Vasquez Rostran (00-VYM)
+Page 181: Found 2 earnings items
+Page 181: Found 4 tax deductions items
+Page 181: Found 0 deductions items
+
+Processing page 182...
+Page 182: Employee - BJ E. Williams (00-WBJ)
+Page 182: Found 8 earnings items
+Page 182: Found 4 tax deductions items
+Page 182: Found 7 deductions items
+
+Processing page 183...
+Page 183: Employee - Ivan D. Wilkinson (00-WID)
+Page 183: Found 5 earnings items
+Page 183: Found 4 tax deductions items
+Page 183: Found 2 deductions items
+
+Processing page 184...
+Page 184: Employee - James A. Wardlow, Jr (00-WJA)
+Page 184: Found 5 earnings items
+Page 184: Found 4 tax deductions items
+Page 184: Found 3 deductions items
+
+Processing page 185...
+Page 185: Employee - James E. White (00-WJE)
+Page 185: Found 6 earnings items
+Page 185: Found 4 tax deductions items
+Page 185: Found 4 deductions items
+
+Processing page 186...
+Page 186: Employee - Jason Q. White (00-WJQ)
+Page 186: Found 5 earnings items
+Page 186: Found 4 tax deductions items
+Page 186: Found 1 deductions items
+
+Processing page 187...
+Page 187: Employee - Tamasi T. Weatherspoon (00-WTT)
+Page 187: Found 3 earnings items
+Page 187: Found 4 tax deductions items
+Page 187: Found 1 deductions items
+
+Processing page 188...
+Page 188: Employee - Dennis A. Yoder, Jr (00-YDA)
+Page 188: Found 6 earnings items
+Page 188: Found 4 tax deductions items
+Page 188: Found 9 deductions items
+
+Processing page 189...
+Page 189: Employee - Scott D. Zwick ()
+Page 189: Found 5 earnings items
+Page 189: Found 4 tax deductions items
+Page 189: Found 1 deductions items
+
+Processing page 190...
+Page 190: Employee - Gideon V. Barnhart (07-BGV)
+Page 190: Found 5 earnings items
+Page 190: Found 4 tax deductions items
+Page 190: Found 3 deductions items
+
+Processing page 191...
+Page 191: Employee - Joshua C. Campbell (07-CJC)
+Page 191: Found 7 earnings items
+Page 191: Found 4 tax deductions items
+Page 191: Found 6 deductions items
+
+Processing page 192...
+Page 192: Employee - Jared L. Cox (07-CJL)
+Page 192: Found 6 earnings items
+Page 192: Found 4 tax deductions items
+Page 192: Found 7 deductions items
+
+Processing page 193...
+Page 193: Employee - Christian M. Davis (07-DCM)
+Page 193: Found 6 earnings items
+Page 193: Found 4 tax deductions items
+Page 193: Found 2 deductions items
+
+Processing page 194...
+Page 194: Employee - Diego Diaz (07-DD)
+Page 194: Found 3 earnings items
+Page 194: Found 4 tax deductions items
+Page 194: Found 0 deductions items
+
+Processing page 195...
+Page 195: Employee - David A. Delong (07-DDA)
+Page 195: Found 6 earnings items
+Page 195: Found 4 tax deductions items
+Page 195: Found 7 deductions items
+
+Processing page 196...
+Page 196: Employee - John W. Dyke (07-DJO)
+Page 196: Found 5 earnings items
+Page 196: Found 4 tax deductions items
+Page 196: Found 4 deductions items
+
+Processing page 197...
+Page 197: Employee - Ricardo Diaz (07-DR2)
+Page 197: Found 3 earnings items
+Page 197: Found 4 tax deductions items
+Page 197: Found 0 deductions items
+
+Processing page 198...
+Page 198: Employee - Daniel A. Hayworth (07-HDA)
+Page 198: Found 5 earnings items
+Page 198: Found 4 tax deductions items
+Page 198: Found 4 deductions items
+
+Processing page 199...
+Page 199: Employee - Michael G. Jepsen (07-JMG)
+Page 199: Found 4 earnings items
+Page 199: Found 4 tax deductions items
+Page 199: Found 4 deductions items
+
+Processing page 200...
+Page 200: Employee - David G. Kendall (07-KDG)
+Page 200: Found 5 earnings items
+Page 200: Found 4 tax deductions items
+Page 200: Found 1 deductions items
+
+Processing page 201...
+Page 201: Employee - Michael R. Leuszler (07-LMR)
+Page 201: Found 6 earnings items
+Page 201: Found 4 tax deductions items
+Page 201: Found 5 deductions items
+
+Processing page 202...
+Page 202: Employee - Jesse L. Nelson (07-NJL)
+Page 202: Found 1 earnings items
+Page 202: Found 4 tax deductions items
+Page 202: Found 3 deductions items
+
+Processing page 203...
+Page 203: Employee - Steven B. Paul (07-PSB)
+Page 203: Found 4 earnings items
+Page 203: Found 4 tax deductions items
+Page 203: Found 8 deductions items
+
+Processing page 204...
+Page 204: Employee - Kalyb J. Rochin (07-RKJ)
+Page 204: Found 5 earnings items
+Page 204: Found 4 tax deductions items
+Page 204: Found 6 deductions items
+
+Processing page 205...
+Page 205: Employee - Todd E. Reutebuch (07-RT)
+Page 205: Found 5 earnings items
+Page 205: Found 4 tax deductions items
+Page 205: Found 7 deductions items
+
+Processing page 206...
+Page 206: Employee - Jason D. Schneider (07-SJD)
+Page 206: Found 5 earnings items
+Page 206: Found 4 tax deductions items
+Page 206: Found 2 deductions items
+
+Processing page 207...
+Page 207: Employee - Gael Torres (07-TG)
+Page 207: Found 5 earnings items
+Page 207: Found 4 tax deductions items
+Page 207: Found 0 deductions items
+
+Processing page 208...
+Page 208: Employee - Osniel Torres Garza (07-TGO)
+Page 208: Found 4 earnings items
+Page 208: Found 4 tax deductions items
+Page 208: Found 3 deductions items
+
+Processing page 209...
+Page 209: Employee - Glen G. Waack (07-WGG)
+Page 209: Found 5 earnings items
+Page 209: Found 4 tax deductions items
+Page 209: Found 1 deductions items
+
+Processing page 210...
+Page 210: Employee - Joseph A. Wilson (07-WJS)
+Page 210: Found 5 earnings items
+Page 210: Found 4 tax deductions items
+Page 210: Found 4 deductions items
+
+Generating CSV files...
+Generated: C:\Users\nflores\Projects\pdf-apps\expense-report-merge\PAYSTUB_PROCESSING\result-files\earnings.csv (1034 records)
+Generated: C:\Users\nflores\Projects\pdf-apps\expense-report-merge\PAYSTUB_PROCESSING\result-files\tax_deductions.csv (829 records)
+Generated: C:\Users\nflores\Projects\pdf-apps\expense-report-merge\PAYSTUB_PROCESSING\result-files\deductions.csv (732 records)
+
+============================================================
+PROCESSING COMPLETE
+============================================================
+Total earnings records: 1034
+Total tax deductions records: 829
+Total deductions records: 732
+
+Output files:
+  earnings: C:\Users\nflores\Projects\pdf-apps\expense-report-merge\PAYSTUB_PROCESSING\result-files\earnings.csv
+  tax_deductions: C:\Users\nflores\Projects\pdf-apps\expense-report-merge\PAYSTUB_PROCESSING\result-files\tax_deductions.csv
+  deductions: C:\Users\nflores\Projects\pdf-apps\expense-report-merge\PAYSTUB_PROCESSING\result-files\deductions.csv
+
+Pipeline completed successfully!
