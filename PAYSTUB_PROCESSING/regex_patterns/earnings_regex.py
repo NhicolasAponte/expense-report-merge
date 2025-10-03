@@ -373,13 +373,10 @@ def extract_earnings_data(text: str, page_num: int = 1) -> List[Dict[str, Any]]:
 
 def extract_earnings_data_pdfplumber(text: str, page_num: int = 1) -> List[Dict[str, Any]]:
     """
-    Extract earnings data from pdfplumber text format.
+    Extract earnings data from pdfplumber text format using robust section-based approach.
     
-    pdfplumber format: "Category Hours Amount YTD" all on one line
-    Examples:
-    - "Holiday 0.00 0.00 1,428.00"
-    - "Loaders 29.15 597.58 28,309.32"
-    - "Paid Time Off 14.00 287.00 1,598.00"
+    This function identifies the EARNINGS section and extracts all line items within it,
+    regardless of special characters in category names. Much more robust than character whitelisting.
     
     Args:
         text: Full text content from pdfplumber
@@ -389,7 +386,6 @@ def extract_earnings_data_pdfplumber(text: str, page_num: int = 1) -> List[Dict[
         List of earnings records with category, hours, amount, ytd
     """
     lines = text.split('\n')
-    earnings = []
     
     # Find earnings section boundaries
     earnings_start = -1
@@ -414,32 +410,149 @@ def extract_earnings_data_pdfplumber(text: str, page_num: int = 1) -> List[Dict[
     if earnings_end == -1:
         earnings_end = len(lines)
     
-    # Pattern for pdfplumber earnings lines: "Category Hours Amount YTD"
-    # Category can have spaces, periods, hyphens, and can start with numbers (e.g., "2/700", "8/900")
-    # Numbers can have commas and are decimal format (including hours field)
-    earnings_pattern = r'^([A-Za-z0-9][A-Za-z\s\-/\.()&0-9]+?)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
+    return _extract_earnings_line_items_from_section(lines, earnings_start + 1, earnings_end, page_num)
+
+
+def _extract_earnings_line_items_from_section(lines: List[str], start_idx: int, end_idx: int, page_num: int) -> List[Dict[str, Any]]:
+    """
+    Robust earnings line item extraction from a section using pattern matching approach.
     
-    # Extract earnings data from the section
-    for i in range(earnings_start + 1, earnings_end):
+    Instead of whitelisting characters, this function:
+    1. Identifies lines that have the structure: "text number number number" (category hours amount ytd)
+    2. Extracts the last three numbers as hours, amount, and YTD
+    3. Takes everything before those numbers as the category name
+    
+    This approach is much more robust and handles ANY special characters in category names.
+    
+    Args:
+        lines: List of text lines
+        start_idx: Starting index of the section
+        end_idx: Ending index of the section
+        page_num: Page number for reference
+        
+    Returns:
+        List of earnings line item dictionaries
+    """
+    line_items = []
+    
+    for i in range(start_idx, end_idx):
         line = lines[i].strip()
         
-        # Skip empty lines and section headers (be more specific about asterisk patterns)
-        if not line or line.startswith('•••') or line.startswith('***') or line.endswith('•••') or line.endswith('***'):
+        # Skip empty lines and section delimiter lines
+        if not line or '•••' in line or '***' in line:
             continue
         
-        # Try to match the earnings pattern
-        match = re.match(earnings_pattern, line)
-        if match:
-            category = match.group(1).strip()
-            hours = match.group(2).replace(',', '')
-            amount = match.group(3).replace(',', '')
-            ytd = match.group(4).replace(',', '')
-            
-            earnings.append({
-                'category': category,
-                'hours': hours,
-                'amount': amount,
-                'ytd': ytd
-            })
+        # Skip obvious non-data lines (headers, footers, etc.)
+        if _is_non_earnings_data_line(line):
+            continue
+        
+        # Try to extract line item using robust pattern matching
+        item = _parse_earnings_line_item_robust(line, page_num)
+        if item:
+            line_items.append(item)
     
-    return earnings
+    return line_items
+
+
+def _is_non_earnings_data_line(line: str) -> bool:
+    """
+    Identify lines that are clearly not earnings data line items.
+    
+    Args:
+        line: Text line to check
+        
+    Returns:
+        True if line should be skipped, False if it might be a data line
+    """
+    line_lower = line.lower().strip()
+    
+    # Skip empty or very short lines
+    if len(line_lower) < 3:
+        return True
+    
+    # Skip header lines
+    header_patterns = [
+        'hours',
+        'amount',
+        'ytd',
+        'category',
+        'description',
+        'gross earnings',
+        'net earnings',
+        'total deductions'
+    ]
+    
+    for pattern in header_patterns:
+        if pattern in line_lower:
+            return True
+    
+    # Skip lines that are just numbers (totals, etc.)
+    if re.match(r'^\d+[\d,\.\s]*$', line.strip()):
+        return True
+    
+    return False
+
+
+def _parse_earnings_line_item_robust(line: str, page_num: int) -> Optional[Dict[str, Any]]:
+    """
+    Parse an earnings line item using a robust approach that handles any special characters.
+    
+    Strategy:
+    1. Find all decimal numbers in the line (potential amounts)
+    2. If we find exactly 3 numbers, treat them as hours, amount, and YTD
+    3. Everything before the first number becomes the category name
+    
+    This approach is much more robust than character whitelisting.
+    
+    Args:
+        line: Text line to parse
+        page_num: Page number for reference
+        
+    Returns:
+        Dictionary with category, hours, amount, ytd, page_number or None if not parseable
+    """
+    line_clean = line.strip()
+    
+    # Find all decimal numbers (amounts) in the line
+    # This pattern matches: 123.45, 1,234.56, 0.00, etc.
+    number_pattern = r'\d{1,3}(?:,\d{3})*\.\d{2}'
+    numbers = re.findall(number_pattern, line_clean)
+    
+    # We expect exactly 3 numbers: hours, amount, and YTD
+    if len(numbers) != 3:
+        return None
+    
+    try:
+        # Extract amounts
+        hours_str = numbers[0].replace(',', '')
+        amount_str = numbers[1].replace(',', '')
+        ytd_str = numbers[2].replace(',', '')
+        
+        hours = float(hours_str)
+        amount = float(amount_str)
+        ytd = float(ytd_str)
+        
+        # Find the category by removing the numbers from the end
+        # This approach preserves ALL characters in the category name
+        category_match = re.match(r'^(.+?)\s+' + re.escape(numbers[0]) + r'\s+' + re.escape(numbers[1]) + r'\s+' + re.escape(numbers[2]) + r'$', line_clean)
+        
+        if category_match:
+            category = category_match.group(1).strip()
+            
+            # Basic validation: category should be meaningful (not just punctuation)
+            # Allow categories that start with numbers (like job codes: "2/700", "8/900")
+            # or contain letters (like "Regular Pay", "Overtime")
+            if re.search(r'[A-Za-z0-9]', category) and len(category) >= 2:
+                return {
+                    'category': category,
+                    'hours': hours,
+                    'amount': amount,
+                    'ytd': ytd,
+                    'page_number': page_num
+                }
+    
+    except (ValueError, AttributeError):
+        # If any parsing fails, return None
+        pass
+    
+    return None

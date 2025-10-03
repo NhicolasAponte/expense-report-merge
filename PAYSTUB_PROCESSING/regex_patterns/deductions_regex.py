@@ -284,11 +284,10 @@ class DeductionsDataExtractor:
 
 def extract_tax_deductions_data_pdfplumber(text: str, page_num: int = 1) -> List[Dict[str, Any]]:
     """
-    Extract tax deductions data from pdfplumber text format.
+    Extract tax deductions data from pdfplumber text format using robust section-based approach.
     
-    pdfplumber format pattern:
-    Lines like: "Federal W/H 42.87 353.68"
-               "Social Security Tax 42.40 324.52"
+    This function identifies the TAX DEDUCTIONS section and extracts all line items within it,
+    regardless of special characters in category names. Much more robust than character whitelisting.
     
     Args:
         text: Full text content from pdfplumber
@@ -320,41 +319,15 @@ def extract_tax_deductions_data_pdfplumber(text: str, page_num: int = 1) -> List
     if end_idx == -1:
         end_idx = len(lines)
     
-    tax_deductions = []
-    
-    # pdfplumber pattern: "Category Amount YTD"
-    # Updated to handle categories starting with numbers and special chars including %
-    pdfplumber_pattern = r'^([A-Za-z0-9][A-Za-z\s/\-\.&\(\)0-9\+%]+?)\s+(\d+\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
-    
-    for i in range(start_idx, end_idx):
-        line = lines[i].strip()
-        if not line or '•••' in line:
-            continue
-            
-        match = re.match(pdfplumber_pattern, line)
-        if match:
-            category = match.group(1).strip()
-            amount = float(match.group(2))
-            ytd_str = match.group(3).replace(',', '')
-            ytd = float(ytd_str)
-            
-            tax_deductions.append({
-                'category': category,
-                'amount': amount,
-                'ytd': ytd,
-                'page_number': page_num
-            })
-    
-    return tax_deductions
+    return _extract_line_items_from_section(lines, start_idx, end_idx, page_num)
 
 
 def extract_deductions_data_pdfplumber(text: str, page_num: int = 1) -> List[Dict[str, Any]]:
     """
-    Extract regular deductions data from pdfplumber text format.
+    Extract regular deductions data from pdfplumber text format using robust section-based approach.
     
-    pdfplumber format pattern:
-    Lines like: "401K Employee 123.45 1234.56"
-               "Health Insurance 89.12 890.12"
+    This function identifies the DEDUCTIONS section and extracts all line items within it,
+    regardless of special characters in category names. Much more robust than character whitelisting.
     
     Args:
         text: Full text content from pdfplumber
@@ -383,32 +356,151 @@ def extract_deductions_data_pdfplumber(text: str, page_num: int = 1) -> List[Dic
     if end_idx == -1:
         end_idx = len(lines)
     
-    deductions = []
+    return _extract_line_items_from_section(lines, start_idx, end_idx, page_num)
+
+
+def _extract_line_items_from_section(lines: List[str], start_idx: int, end_idx: int, page_num: int) -> List[Dict[str, Any]]:
+    """
+    Robust line item extraction from a section using pattern matching approach.
     
-    # pdfplumber pattern: "Category Amount YTD"
-    # Updated to handle categories starting with numbers (401K) and special chars (+ and %)
-    pdfplumber_pattern = r'^([A-Za-z0-9][A-Za-z\s/\-\.&\(\)0-9\+%]+?)\s+(\d+\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
+    Instead of whitelisting characters, this function:
+    1. Identifies lines that have the structure: "text number number"
+    2. Extracts the last two numbers as amount and YTD
+    3. Takes everything before those numbers as the category name
+    
+    This approach is much more robust and handles ANY special characters in category names.
+    
+    Args:
+        lines: List of text lines
+        start_idx: Starting index of the section
+        end_idx: Ending index of the section
+        page_num: Page number for reference
+        
+    Returns:
+        List of line item dictionaries
+    """
+    line_items = []
     
     for i in range(start_idx, end_idx):
         line = lines[i].strip()
-        if not line or '•••' in line:
+        
+        # Skip empty lines and section delimiter lines
+        if not line or '•••' in line or '***' in line:
             continue
-            
-        match = re.match(pdfplumber_pattern, line)
-        if match:
-            category = match.group(1).strip()
-            amount = float(match.group(2))
-            ytd_str = match.group(3).replace(',', '')
-            ytd = float(ytd_str)
-            
-            deductions.append({
-                'category': category,
-                'amount': amount,
-                'ytd': ytd,
-                'page_number': page_num
-            })
+        
+        # Skip obvious non-data lines (headers, footers, etc.)
+        if _is_non_data_line(line):
+            continue
+        
+        # Try to extract line item using robust pattern matching
+        item = _parse_line_item_robust(line, page_num)
+        if item:
+            line_items.append(item)
     
-    return deductions
+    return line_items
+
+
+def _is_non_data_line(line: str) -> bool:
+    """
+    Identify lines that are clearly not data line items.
+    
+    Args:
+        line: Text line to check
+        
+    Returns:
+        True if line should be skipped, False if it might be a data line
+    """
+    line_lower = line.lower().strip()
+    
+    # Skip empty or very short lines
+    if len(line_lower) < 3:
+        return True
+    
+    # Skip header lines
+    header_patterns = [
+        'amount',
+        'ytd',
+        'category',
+        'description',
+        'total deductions',
+        'total direct',
+        'gross earnings',
+        'net earnings',
+        'check amount',
+        'available pto',
+        'ytd paid pto',
+        'period accrued',
+        'ytd accrued'
+    ]
+    
+    for pattern in header_patterns:
+        if pattern in line_lower:
+            return True
+    
+    # Skip lines that are just numbers (totals, etc.)
+    if re.match(r'^\d+[\d,\.\s]*$', line.strip()):
+        return True
+    
+    return False
+
+
+def _parse_line_item_robust(line: str, page_num: int) -> Optional[Dict[str, Any]]:
+    """
+    Parse a line item using a robust approach that handles any special characters.
+    
+    Strategy:
+    1. Find all decimal numbers in the line (potential amounts)
+    2. If we find exactly 2 numbers, treat them as amount and YTD
+    3. Everything before the first number becomes the category name
+    
+    This approach is much more robust than character whitelisting.
+    
+    Args:
+        line: Text line to parse
+        page_num: Page number for reference
+        
+    Returns:
+        Dictionary with category, amount, ytd, page_number or None if not parseable
+    """
+    line_clean = line.strip()
+    
+    # Find all decimal numbers (amounts) in the line
+    # This pattern matches: 123.45, 1,234.56, 0.00, etc.
+    number_pattern = r'\d{1,3}(?:,\d{3})*\.\d{2}'
+    numbers = re.findall(number_pattern, line_clean)
+    
+    # We expect exactly 2 numbers: amount and YTD
+    if len(numbers) != 2:
+        return None
+    
+    try:
+        # Extract amounts
+        amount_str = numbers[0].replace(',', '')
+        ytd_str = numbers[1].replace(',', '')
+        amount = float(amount_str)
+        ytd = float(ytd_str)
+        
+        # Find the category by removing the numbers from the end
+        # This approach preserves ALL characters in the category name
+        category_match = re.match(r'^(.+?)\s+' + re.escape(numbers[0]) + r'\s+' + re.escape(numbers[1]) + r'$', line_clean)
+        
+        if category_match:
+            category = category_match.group(1).strip()
+            
+            # Basic validation: category should have at least one letter
+            if re.search(r'[A-Za-z]', category):
+                return {
+                    'category': category,
+                    'amount': amount,
+                    'ytd': ytd,
+                    'page_number': page_num
+                }
+    
+    except (ValueError, AttributeError):
+        # If any parsing fails, return None
+        pass
+    
+    return None
 
 
 def extract_tax_deductions_data(text: str, page_num: int = 1) -> List[Dict[str, Any]]:
