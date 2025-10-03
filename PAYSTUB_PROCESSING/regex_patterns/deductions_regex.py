@@ -323,8 +323,8 @@ def extract_tax_deductions_data_pdfplumber(text: str, page_num: int = 1) -> List
     tax_deductions = []
     
     # pdfplumber pattern: "Category Amount YTD"
-    # Updated to handle categories starting with numbers and special chars
-    pdfplumber_pattern = r'^([A-Za-z0-9][A-Za-z\s/\-\.&\(\)0-9\+]+?)\s+(\d+\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
+    # Updated to handle categories starting with numbers and special chars including %
+    pdfplumber_pattern = r'^([A-Za-z0-9][A-Za-z\s/\-\.&\(\)0-9\+%]+?)\s+(\d+\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
     
     for i in range(start_idx, end_idx):
         line = lines[i].strip()
@@ -386,8 +386,8 @@ def extract_deductions_data_pdfplumber(text: str, page_num: int = 1) -> List[Dic
     deductions = []
     
     # pdfplumber pattern: "Category Amount YTD"
-    # Updated to handle categories starting with numbers (401K) and special chars (+)
-    pdfplumber_pattern = r'^([A-Za-z0-9][A-Za-z\s/\-\.&\(\)0-9\+]+?)\s+(\d+\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
+    # Updated to handle categories starting with numbers (401K) and special chars (+ and %)
+    pdfplumber_pattern = r'^([A-Za-z0-9][A-Za-z\s/\-\.&\(\)0-9\+%]+?)\s+(\d+\.\d+)\s+(\d+\.\d+|\d{1,3}(?:,\d{3})*\.\d+)$'
     
     for i in range(start_idx, end_idx):
         line = lines[i].strip()
