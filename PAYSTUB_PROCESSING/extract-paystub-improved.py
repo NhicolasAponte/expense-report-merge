@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-Improved Paystub Data Extraction Script
+[DEPRECATED] Improved Paystub Data Extraction Script
+
+DEPRECATED: This script uses PyPDF2 for text extraction. Use paystub_pipeline.py instead,
+which uses pdfplumber for better text extraction and structured layout handling.
 
 Handles Crystal Reports columnar layouts correctly:
 - Layout A: Combined Amount/YTD pairs after single YTD header

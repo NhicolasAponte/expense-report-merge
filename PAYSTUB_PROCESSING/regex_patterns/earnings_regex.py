@@ -305,7 +305,8 @@ def extract_earnings_data(text: str, page_num: int = 1) -> List[Dict[str, Any]]:
     if pdfplumber_result:
         return pdfplumber_result
     
-    # Fallback to original PyPDF2 format extraction
+    # DEPRECATED: Fallback to original PyPDF2 format extraction
+    # This code path is deprecated - pdfplumber should handle all cases
     extractor = EarningsDataExtractor()
     lines = text.split('\n')
     

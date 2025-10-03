@@ -428,7 +428,8 @@ def extract_tax_deductions_data(text: str, page_num: int = 1) -> List[Dict[str, 
     if pdfplumber_result:
         return pdfplumber_result
     
-    # Fallback to PyPDF2 format extraction
+    # DEPRECATED: Fallback to PyPDF2 format extraction
+    # This code path is deprecated - pdfplumber should handle all cases
     extractor = DeductionsDataExtractor()
     lines = text.split('\n')
     
@@ -488,7 +489,8 @@ def extract_deductions_data(text: str, page_num: int = 1) -> List[Dict[str, Any]
     if pdfplumber_result:
         return pdfplumber_result
     
-    # Fallback to PyPDF2 format extraction
+    # DEPRECATED: Fallback to PyPDF2 format extraction
+    # This code path is deprecated - pdfplumber should handle all cases
     extractor = DeductionsDataExtractor()
     lines = text.split('\n')
     

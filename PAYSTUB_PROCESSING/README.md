@@ -2,17 +2,20 @@
 
 This directory contains all tools and resources for processing paystub PDF documents and extracting structured data.
 
+**IMPORTANT**: All production scripts now use **pdfplumber** as the primary PDF text extraction method for better accuracy and layout preservation.
+
 ## Directory Structure
 
 ```
 PAYSTUB_PROCESSING/
 ├── Scripts/
-│   ├── extract-paystub-improved.py      # Main production script
-│   ├── extract-paystub-clean.py         # Clean CSV generation
-│   ├── extract-paystub-structured.py    # Object-oriented approach
-│   ├── extract-all-paystub-data.py      # Alternative comprehensive script
-│   ├── extract-paystub-data.py          # Original extraction script
-│   └── extract-paystub-amounts.py       # Amounts-focused extraction
+│   ├── paystub_pipeline.py              # RECOMMENDED: Main production pipeline (pdfplumber)
+│   ├── extract-paystub-clean.py         # Clean CSV generation (pdfplumber)
+│   ├── extract-paystub-structured.py    # Object-oriented approach (pdfplumber)
+│   ├── extract-paystub-improved.py      # DEPRECATED: Use paystub_pipeline.py instead
+│   ├── extract-all-paystub-data.py      # DEPRECATED: Use paystub_pipeline.py instead
+│   ├── extract-paystub-data.py          # DEPRECATED: Use paystub_pipeline.py instead
+│   └── extract-paystub-amounts.py       # DEPRECATED: Use paystub_pipeline.py instead
 ├── test-files/
 │   └── All_22_Paystubs.pdf             # Source paystub document
 ├── result-files/
@@ -29,12 +32,12 @@ PAYSTUB_PROCESSING/
    cd PAYSTUB_PROCESSING
    ```
 
-2. **Run the main processing script:**
+2. **Run the RECOMMENDED main processing pipeline:**
    ```bash
-   python extract-paystub-improved.py
+   python paystub_pipeline.py
    ```
 
-3. **Generate clean CSV files:**
+3. **Alternative: Generate clean CSV files:**
    ```bash
    python extract-paystub-clean.py
    ```
@@ -56,13 +59,14 @@ Results are saved in the `result-files/` directory:
 - **Smart Category Filtering** - Removes PDF noise and artifacts
 - **Employee Data Linking** - Associates all data with correct employee records
 - **Comprehensive Validation** - Error handling and data quality checks
+- **pdfplumber Integration** - Better text extraction and layout preservation
 
 ## Dependencies
 
 All scripts use relative paths and import the main config from the parent directory. Make sure you have:
 
-- PyPDF2
-- pdfplumber (for structured approach)
+- **pdfplumber** (primary PDF extraction library - RECOMMENDED)
+- PyPDF2 (legacy support only - being phased out)
 - Standard Python libraries (csv, re, os, typing)
 
 ## Support

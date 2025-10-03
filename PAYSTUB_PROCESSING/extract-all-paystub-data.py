@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-Comprehensive Paystub Data Extraction Script
+[DEPRECATED] Comprehensive Paystub Data Extraction Script
+
+DEPRECATED: This script uses PyPDF2 for text extraction. Use paystub_pipeline.py instead,
+which uses pdfplumber for better text extraction and structured layout handling.
 
 This script extracts data from all three main sections of paystub PDFs:
 1. EARNINGS - categories with Hours, Amount, and YTD

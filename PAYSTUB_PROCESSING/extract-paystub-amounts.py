@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+"""
+[DEPRECATED] Paystub Amount Extraction Script
+
+DEPRECATED: This script uses PyPDF2 for text extraction. Use paystub_pipeline.py instead,
+which uses pdfplumber for better text extraction and structured layout handling.
+"""
+
 import os
 import csv
 import re
