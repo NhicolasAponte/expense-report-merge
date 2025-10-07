@@ -3,14 +3,22 @@
 Simple test script to check Exchange connection
 """
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from exchangelib import Credentials, Account, DELEGATE
-from env_vars import EMAIL_ADDRESS, OUTLOOK_APP_PASSWORD
+from env_config import EMAIL_ADDRESS, OUTLOOK_APP_PASSWORD
 
 def test_connection():
     """Test basic connection to Exchange"""
     try:
         print(f"Testing connection for: {EMAIL_ADDRESS}")
-        print(f"Using app password: {OUTLOOK_APP_PASSWORD[:4]}****{OUTLOOK_APP_PASSWORD[-4:]}")
+        if OUTLOOK_APP_PASSWORD:
+            print(f"Using app password: {OUTLOOK_APP_PASSWORD[:4]}****{OUTLOOK_APP_PASSWORD[-4:]}")
+        else:
+            print("No app password configured")
+            return False
         
         # Create credentials with app password
         credentials = Credentials(username=EMAIL_ADDRESS, password=OUTLOOK_APP_PASSWORD)

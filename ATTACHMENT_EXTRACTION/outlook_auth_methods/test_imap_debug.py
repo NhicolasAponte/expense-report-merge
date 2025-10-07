@@ -5,7 +5,11 @@ Test IMAP connection with detailed debugging
 
 import imaplib
 import logging
-from env_vars import EMAIL_ADDRESS, OUTLOOK_APP_PASSWORD
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from env_config import EMAIL_ADDRESS, OUTLOOK_APP_PASSWORD
 
 # Enable detailed IMAP debugging
 imaplib.Debug = 4

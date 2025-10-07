@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """
-Simple Gmail IMAP connection test
+Test Gmail IMAP connection
 """
 
 import imaplib
-from env_vars import GMAIL_ADDRESS, GMAIL_PASSWORD
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from env_config import GMAIL_ADDRESS, GMAIL_PASSWORD
 
 def test_gmail_connection():
     """Test Gmail IMAP connection"""

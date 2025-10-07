@@ -2,7 +2,11 @@
 # this script works 
 import msal
 import requests
-from env_vars import CLIENT_ID
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from env_config import CLIENT_ID
 
 # Microsoft Graph endpoint
 GRAPH_API_ENDPOINT = "https://graph.microsoft.com/v1.0/me"

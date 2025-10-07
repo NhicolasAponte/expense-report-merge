@@ -25,6 +25,7 @@ CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 # Work email credentials
 WORK_EMAIL_ADDRESS = os.getenv('WORK_EMAIL_ADDRESS')
 WORK_PASSWORD = os.getenv('WORK_PASSWORD')
+WORK_APP_PASSWORD = os.getenv('WORK_APP_PASSWORD')
 
 WORK_CLIENT_ID = os.getenv('WORK_CLIENT_ID')
 WORK_TENANT_ID = os.getenv('WORK_TENANT_ID')

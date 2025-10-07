@@ -19,8 +19,12 @@ from exchangelib import (
 )
 
 # Import configuration
-from env_vars import (
-    EMAIL_ADDRESS, OUTLOOK_PASSWORD, EXCHANGE_SERVER, 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from env_config import (
+    EMAIL_ADDRESS, OUTLOOK_APP_PASSWORD, EXCHANGE_SERVER, 
     EXCHANGE_VERSION, SENT_ITEMS_FOLDER, OUTPUT_DIR
 )
 
@@ -214,14 +218,14 @@ def main():
     """Main function to run the attachment downloader."""
     
     # Validate environment variables
-    if EMAIL_ADDRESS == "your-email@company.com" or OUTLOOK_PASSWORD == "your-password":
-        logger.error("Please update EMAIL_ADDRESS and OUTLOOK_PASSWORD in env_vars.py with your actual credentials")
+    if not EMAIL_ADDRESS or not OUTLOOK_APP_PASSWORD:
+        logger.error("Please update EMAIL_ADDRESS and OUTLOOK_APP_PASSWORD in .env file with your actual credentials")
         return
     
     # Create downloader instance
     downloader = ExchangeAttachmentDownloader(
         email=EMAIL_ADDRESS,
-        password=OUTLOOK_PASSWORD,
+        password=OUTLOOK_APP_PASSWORD,
         server=EXCHANGE_SERVER,
         version=EXCHANGE_VERSION
     )

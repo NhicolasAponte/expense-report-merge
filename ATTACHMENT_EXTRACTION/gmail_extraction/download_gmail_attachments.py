@@ -13,7 +13,11 @@ from pathlib import Path
 import re
 
 # Import configuration
-from env_vars import GMAIL_ADDRESS, GMAIL_PASSWORD, OUTPUT_DIR
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from env_config import GMAIL_ADDRESS, GMAIL_PASSWORD, OUTPUT_DIR
 
 # Configure logging
 logging.basicConfig(
@@ -300,7 +304,7 @@ def main():
     
     # Validate environment variables
     if not GMAIL_ADDRESS or not GMAIL_PASSWORD:
-        logger.error("Please update GMAIL_ADDRESS and GMAIL_PASSWORD in env_vars.py")
+        logger.error("Please update GMAIL_ADDRESS and GMAIL_PASSWORD in .env file")
         return
     
     if GMAIL_PASSWORD == "ShoppingPasswurd69!":

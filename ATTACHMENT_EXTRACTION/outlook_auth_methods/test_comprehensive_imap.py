@@ -5,7 +5,11 @@ Comprehensive IMAP connection test with multiple authentication methods
 
 import imaplib
 import base64
-from env_vars import EMAIL_ADDRESS, OUTLOOK_APP_PASSWORD
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from env_config import EMAIL_ADDRESS, OUTLOOK_APP_PASSWORD
 
 def test_basic_auth():
     """Test basic LOGIN authentication"""

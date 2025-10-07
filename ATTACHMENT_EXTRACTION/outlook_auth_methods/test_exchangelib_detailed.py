@@ -10,15 +10,33 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import logging
 from exchangelib import Credentials, Account, DELEGATE, Configuration, Version
 from exchangelib.version import EXCHANGE_2016
-from env_config import WORK_EMAIL_ADDRESS, WORK_PASSWORD 
+from env_config import (
+    WORK_EMAIL_ADDRESS, WORK_PASSWORD, WORK_APP_PASSWORD,
+    EMAIL_ADDRESS, OUTLOOK_APP_PASSWORD
+)
 
 # Enable detailed logging
 logging.basicConfig(level=logging.DEBUG)
 exchangelib_logger = logging.getLogger('exchangelib')
 exchangelib_logger.setLevel(logging.DEBUG)
 
-password=WORK_PASSWORD
-email_address=WORK_EMAIL_ADDRESS
+# Configuration: Choose which account to test
+# Set USE_WORK_ACCOUNT = True to test work account, False for personal account
+USE_WORK_ACCOUNT = True
+
+if USE_WORK_ACCOUNT:
+    email_address = WORK_EMAIL_ADDRESS
+    password = WORK_PASSWORD or WORK_APP_PASSWORD  # Try regular password first, then app password
+    account_type = "Work"
+else:
+    email_address = EMAIL_ADDRESS
+    password = OUTLOOK_APP_PASSWORD
+    account_type = "Personal"
+
+print(f"🔧 Testing {account_type} Account Configuration")
+print(f"Email: {email_address}")
+print(f"Password: {'***' if password else 'NOT SET'}")
+print("=" * 50)
 def test_autodiscovery():
     """Test autodiscovery method"""
     print("🔍 Testing Autodiscovery Method")
@@ -99,7 +117,10 @@ def main():
     print("🧪 Detailed ExchangeLib Testing")
     print("=" * 50)
     print(f"Email: {email_address}")
-    print(f"App Password: {password[:4]}****{password[-4:]}")
+    if password:
+        print(f"App Password: {password[:4]}****{password[-4:]}")
+    else:
+        print("App Password: NOT SET")
     print()
     
     # Try autodiscovery first
