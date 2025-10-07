@@ -17,18 +17,22 @@ EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
 OUTLOOK_PASSWORD = os.getenv('OUTLOOK_PASSWORD')
 OUTLOOK_APP_PASSWORD = os.getenv('OUTLOOK_APP_PASSWORD')
 
+# Personal Azure app credentials
+CLIENT_ID = os.getenv('CLIENT_ID')
+TENANT_ID = os.getenv('TENANT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+
 # Work email credentials
 WORK_EMAIL_ADDRESS = os.getenv('WORK_EMAIL_ADDRESS')
 WORK_PASSWORD = os.getenv('WORK_PASSWORD')
 
+WORK_CLIENT_ID = os.getenv('WORK_CLIENT_ID')
+WORK_TENANT_ID = os.getenv('WORK_TENANT_ID')
+WORK_CLIENT_SECRET = os.getenv('WORK_CLIENT_SECRET')
+
 # Gmail credentials
 GMAIL_ADDRESS = os.getenv('GMAIL_ADDRESS')
 GMAIL_PASSWORD = os.getenv('GMAIL_PASSWORD')
-
-# Azure app credentials
-CLIENT_ID = os.getenv('CLIENT_ID')
-TENANT_ID = os.getenv('TENANT_ID')
-CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 
 # Exchange server configuration
 EXCHANGE_SERVER = os.getenv('EXCHANGE_SERVER', 'outlook.office365.com')
