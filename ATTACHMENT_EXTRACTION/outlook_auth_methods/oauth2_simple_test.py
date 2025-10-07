@@ -1,3 +1,53 @@
+#!/usr/bin/env python3
+"""
+OAuth2 Simple Test - Modern Authentication for Microsoft 365
+
+AUTHENTICATION METHOD:
+- OAuth 2.0 Authorization Code Flow with PKCE
+- Uses local HTTP server to capture redirect
+- Modern authentication (no basic auth)
+
+WHAT IT DOES:
+- Implements a simplified OAuth2 flow for Microsoft 365
+- Starts a local HTTP server on localhost:8080 to capture the authorization code
+- Opens browser for user authentication
+- Exchanges authorization code for access tokens
+- Tests API access with the obtained token
+
+MICROSOFT REQUIREMENTS:
+1. Azure App Registration (recommended):
+   - Go to https://portal.azure.com > App registrations > New registration
+   - Set redirect URI to: http://localhost:8080
+   - Configure API permissions: Mail.Read, offline_access
+   - Note the Application (client) ID
+
+2. Alternative (Uses hardcoded public client ID):
+   - Script uses a0c73c16-a7e3-4564-9a95-2bdf47383716 (Microsoft Graph PowerShell)
+   - This works but is not recommended for production use
+
+ADVANTAGES:
+- No app passwords required
+- Works with MFA-enabled accounts
+- More secure than basic authentication
+- Supports token refresh
+
+LIMITATIONS:
+- Requires user interaction (browser)
+- Needs local server on port 8080
+- Tokens expire and need refresh
+
+SETUP STEPS:
+1. Optional: Register your own app in Azure (recommended)
+2. Update CLIENT_ID variable if using custom app
+3. Ensure port 8080 is available
+4. Run script and follow browser prompts
+
+USE CASES:
+- Testing OAuth2 flow
+- Developing applications with user consent
+- Scenarios requiring explicit user authentication
+"""
+
 import requests
 import json
 import webbrowser

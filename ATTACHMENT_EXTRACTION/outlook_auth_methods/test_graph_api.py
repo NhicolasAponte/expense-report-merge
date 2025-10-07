@@ -1,3 +1,80 @@
+#!/usr/bin/env python3
+"""
+Microsoft Graph API Test - Modern Authentication with MSAL and Graph API
+
+AUTHENTICATION METHOD:
+- OAuth 2.0 Device Code Flow using MSAL library
+- Microsoft Graph API for email and user data access
+- Modern authentication with automatic token management
+
+WHAT IT DOES:
+- Demonstrates Microsoft Graph API authentication and usage
+- Implements device code flow for personal and organizational accounts
+- Tests Graph API endpoints (user profile, mail, folders)
+- Shows email attachment download via Graph API
+- Provides complete Graph API integration example
+
+MICROSOFT REQUIREMENTS:
+1. Azure App Registration (Optional):
+   - Script uses Microsoft Graph PowerShell public client by default
+   - For production: Register at https://portal.azure.com
+   - Application type: Public client/native
+   - Required permissions: Mail.Read, Mail.ReadWrite, Mail.Send, User.Read
+
+2. Account Requirements:
+   - Microsoft 365 or Outlook.com account
+   - Modern authentication enabled
+   - No app passwords required
+
+GRAPH API FEATURES:
+- User profile information
+- Email folder listing
+- Message retrieval and search
+- Attachment download
+- Message sending capabilities
+- Rich metadata access
+
+AUTHENTICATION FLOW:
+1. Initialize MSAL PublicClientApplication
+2. Check for cached tokens first
+3. If no cache, initiate device code flow
+4. Display user code and verification URL
+5. User completes authentication on any device
+6. Automatic token acquisition and caching
+7. Use access token for Graph API calls
+
+ADVANTAGES:
+- Modern OAuth2 authentication
+- Rich API features beyond email
+- Automatic token refresh and caching
+- Works with MFA-enabled accounts
+- Official Microsoft library support
+- Cross-platform compatibility
+
+SETUP STEPS:
+1. No Azure registration required (uses public client)
+2. Install MSAL: pip install msal
+3. Run script and follow device authentication
+4. Visit verification URL and enter user code
+
+USE CASES:
+- Modern email application development
+- Rich email metadata and operations
+- Cross-platform email clients
+- Applications requiring Graph API features
+- Scenarios needing official Microsoft API support
+
+API ENDPOINTS TESTED:
+- /me (user profile)
+- /me/mailFolders (folder structure)
+- /me/messages (email retrieval)
+- /me/messages/{id}/attachments (attachment access)
+
+DEPENDENCIES:
+- msal: Microsoft Authentication Library
+- requests: HTTP client for Graph API calls
+"""
+
 import msal
 import requests
 import json

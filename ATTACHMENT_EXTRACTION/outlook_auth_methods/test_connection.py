@@ -1,6 +1,63 @@
 #!/usr/bin/env python3
 """
-Simple test script to check Exchange connection
+ExchangeLib Simple Connection Test - Basic Exchange Web Services Authentication
+
+AUTHENTICATION METHOD:
+- Exchange Web Services (EWS) with basic authentication
+- Uses ExchangeLib Python library for Exchange protocol
+- App password authentication for security
+
+WHAT IT DOES:
+- Tests connection to Microsoft Exchange using ExchangeLib
+- Performs autodiscovery to find Exchange server settings
+- Validates access to inbox and sent items folders
+- Simple connectivity verification
+
+MICROSOFT REQUIREMENTS:
+1. App Password Setup (Required):
+   - Enable 2FA on Microsoft account
+   - Generate app password for "Mail" application
+   - Use 16-character app password (not regular password)
+   - Store in OUTLOOK_APP_PASSWORD environment variable
+
+2. Exchange Web Services:
+   - EWS must be enabled (default for most accounts)
+   - Basic authentication allowed for EWS
+   - Compatible with Exchange Online and on-premises
+
+ADVANTAGES:
+- Rich Exchange protocol features
+- Automatic server discovery
+- Full folder and item access
+- Better than IMAP for Exchange-specific features
+
+AUTHENTICATION FLOW:
+1. Create credentials with email and app password
+2. Use ExchangeLib autodiscovery to find server
+3. Establish account connection
+4. Test folder access (inbox, sent items)
+
+SETUP STEPS:
+1. Enable 2FA on Microsoft account
+2. Generate app password for Mail
+3. Add EMAIL_ADDRESS and OUTLOOK_APP_PASSWORD to .env
+4. Install exchangelib: pip install exchangelib
+5. Run script to test connection
+
+USE CASES:
+- Exchange-specific email operations
+- Calendar and contacts access
+- Rich email metadata and properties
+- Organizational Exchange servers
+
+LIMITATIONS:
+- Requires app passwords (basic auth)
+- Microsoft may deprecate basic auth for EWS
+- More complex than IMAP for simple operations
+- Heavier protocol overhead
+
+DEPENDENCIES:
+- exchangelib: Python Exchange Web Services client
 """
 
 import sys

@@ -1,6 +1,77 @@
 #!/usr/bin/env python3
 """
-Detailed ExchangeLib debugging script
+ExchangeLib Detailed Test - Advanced Exchange Web Services with Account Switching
+
+AUTHENTICATION METHOD:
+- Exchange Web Services (EWS) with comprehensive testing
+- Supports both work and personal account authentication
+- Tests autodiscovery and manual configuration methods
+- App password and regular password support
+
+WHAT IT DOES:
+- Provides detailed ExchangeLib connection testing with debug logging
+- Tests both autodiscovery and manual Exchange server configuration
+- Supports switching between work and personal Microsoft accounts
+- Validates folder access and Exchange connectivity
+- Comprehensive error reporting and troubleshooting
+
+MICROSOFT REQUIREMENTS:
+1. Personal Account Setup:
+   - Enable 2FA on Microsoft account
+   - Generate app password for "Mail" application  
+   - Store in OUTLOOK_APP_PASSWORD environment variable
+
+2. Work Account Setup:
+   - Regular domain password or app password
+   - Exchange Online or on-premises Exchange access
+   - Store credentials in WORK_EMAIL_ADDRESS and WORK_PASSWORD/WORK_APP_PASSWORD
+
+3. Exchange Web Services:
+   - EWS enabled on the server
+   - Basic authentication allowed
+   - Network connectivity to Exchange endpoints
+
+ACCOUNT SWITCHING:
+- Set USE_WORK_ACCOUNT = True for work accounts
+- Set USE_WORK_ACCOUNT = False for personal accounts
+- Automatically chooses appropriate credentials
+
+AUTHENTICATION METHODS TESTED:
+1. Autodiscovery:
+   - Let ExchangeLib discover server settings
+   - Automatic endpoint and version detection
+   
+2. Manual Configuration:
+   - Hardcoded server: outlook.office365.com
+   - Exchange 2016 version specification
+   - Fallback when autodiscovery fails
+
+ADVANTAGES:
+- Comprehensive Exchange protocol testing
+- Detailed debug logging for troubleshooting
+- Support for multiple account types
+- Fallback configuration options
+
+SETUP STEPS:
+1. Configure environment variables for desired account type
+2. Set USE_WORK_ACCOUNT flag appropriately
+3. Install exchangelib: pip install exchangelib
+4. Run script with debug output enabled
+
+USE CASES:
+- Troubleshooting Exchange connectivity issues
+- Testing different account configurations
+- Development and debugging Exchange applications
+- Validating server settings and authentication
+
+DEBUGGING FEATURES:
+- Full ExchangeLib debug logging
+- Step-by-step connection process
+- Detailed error reporting
+- Server response analysis
+
+DEPENDENCIES:
+- exchangelib: Python Exchange Web Services client
 """
 
 import sys
