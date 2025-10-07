@@ -10,24 +10,26 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import logging
 from exchangelib import Credentials, Account, DELEGATE, Configuration, Version
 from exchangelib.version import EXCHANGE_2016
-from env_config import EMAIL_ADDRESS, OUTLOOK_APP_PASSWORD
+from env_config import WORK_EMAIL_ADDRESS, WORK_PASSWORD 
 
 # Enable detailed logging
 logging.basicConfig(level=logging.DEBUG)
 exchangelib_logger = logging.getLogger('exchangelib')
 exchangelib_logger.setLevel(logging.DEBUG)
 
+password=WORK_PASSWORD
+email_address=WORK_EMAIL_ADDRESS
 def test_autodiscovery():
     """Test autodiscovery method"""
     print("🔍 Testing Autodiscovery Method")
     print("=" * 40)
     
     try:
-        credentials = Credentials(username=EMAIL_ADDRESS, password=OUTLOOK_APP_PASSWORD)
+        credentials = Credentials(username=email_address, password=password)
         
         print("Step 1: Creating account with autodiscovery...")
         account = Account(
-            primary_smtp_address=EMAIL_ADDRESS,
+            primary_smtp_address=email_address,
             credentials=credentials,
             autodiscover=True,
             access_type=DELEGATE
@@ -46,7 +48,7 @@ def test_manual_config():
     print("=" * 40)
     
     try:
-        credentials = Credentials(username=EMAIL_ADDRESS, password=OUTLOOK_APP_PASSWORD)
+        credentials = Credentials(username=email_address, password=password)
         
         # Try manual configuration
         config = Configuration(
@@ -57,7 +59,7 @@ def test_manual_config():
         
         print("Step 1: Creating account with manual config...")
         account = Account(
-            primary_smtp_address=EMAIL_ADDRESS,
+            primary_smtp_address=email_address,
             config=config,
             autodiscover=False,
             access_type=DELEGATE
@@ -96,8 +98,8 @@ def test_account_access(account):
 def main():
     print("🧪 Detailed ExchangeLib Testing")
     print("=" * 50)
-    print(f"Email: {EMAIL_ADDRESS}")
-    print(f"App Password: {OUTLOOK_APP_PASSWORD[:4]}****{OUTLOOK_APP_PASSWORD[-4:]}")
+    print(f"Email: {email_address}")
+    print(f"App Password: {password[:4]}****{password[-4:]}")
     print()
     
     # Try autodiscovery first
