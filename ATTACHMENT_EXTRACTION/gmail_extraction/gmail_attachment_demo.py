@@ -4,7 +4,7 @@ Gmail Attachment Downloader - Final Usage Guide
 This demonstrates how to customize and use the attachment extraction system.
 """
 
-from download_gmail_attachments import GmailAttachmentDownloader
+from ATTACHMENT_EXTRACTION.gmail_extraction.download_gmail_attachments import GmailAttachmentDownloader
 from env_vars import GMAIL_ADDRESS, GMAIL_PASSWORD, OUTPUT_DIR
 import logging
 

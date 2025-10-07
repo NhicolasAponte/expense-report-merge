@@ -3,7 +3,7 @@
 Test Gmail attachment downloader with different configurations
 """
 
-from download_gmail_attachments import GmailAttachmentDownloader
+from ATTACHMENT_EXTRACTION.gmail_extraction.download_gmail_attachments import GmailAttachmentDownloader
 from env_vars import GMAIL_ADDRESS, GMAIL_PASSWORD, OUTPUT_DIR
 import logging
 

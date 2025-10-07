@@ -13,11 +13,10 @@ from pathlib import Path
 from typing import List, Optional
 
 from exchangelib import (
-    Credentials, Account, Configuration, DELEGATE,
+    Credentials, Account, DELEGATE,
     Message, FileAttachment, ItemAttachment,
     EWSDateTime, EWSTimeZone
 )
-from exchangelib.version import Version
 
 # Import configuration
 from env_vars import (
@@ -63,18 +62,11 @@ class ExchangeAttachmentDownloader:
             # Create credentials
             credentials = Credentials(username=self.email, password=self.password)
             
-            # Configure connection
-            config = Configuration(
-                server=self.server,
-                credentials=credentials,
-                version=Version(self.version)
-            )
-            
-            # Create account
+            # Create account with autodiscovery
             self.account = Account(
                 primary_smtp_address=self.email,
-                config=config,
-                autodiscover=False,
+                credentials=credentials,
+                autodiscover=True,
                 access_type=DELEGATE
             )
             
