@@ -3,6 +3,14 @@ __pycache__/
 venv/
 .env/
 
+# Environment variables (contains sensitive information)
+.env
+*.env
+
 PAYSTUB_PROCESSING/test-files/
 PAYSTUB_PROCESSING/result-files/
 PAYSTUB_PROCESSING/test-keys/
+
+# Attachment downloads
+ATTACHMENT_EXTRACTION/attachments/
+attachments/

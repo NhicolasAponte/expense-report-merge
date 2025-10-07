@@ -3,10 +3,14 @@
 Detailed ExchangeLib debugging script
 """
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import logging
 from exchangelib import Credentials, Account, DELEGATE, Configuration, Version
 from exchangelib.version import EXCHANGE_2016
-from env_vars import EMAIL_ADDRESS, OUTLOOK_APP_PASSWORD
+from env_config import EMAIL_ADDRESS, OUTLOOK_APP_PASSWORD
 
 # Enable detailed logging
 logging.basicConfig(level=logging.DEBUG)
