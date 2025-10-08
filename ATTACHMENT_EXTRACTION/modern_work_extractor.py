@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """
+WORKING SCRIPT - NEEDS CODE CLEANUP 
 Modern Work Email Extractor - Microsoft Graph API with OAuth 2.0
 
 AUTHENTICATION METHOD:
@@ -208,7 +209,8 @@ class ModernWorkEmailExtractor:
                     logger.info(f"Searching {folder}...")
                     
                     # Build Graph API query with date filter
-                    url = f"{self.graph_endpoint}/users/{email_address}/mailFolders/{folder}/messages"
+                    # Try /me endpoint first (often has better permissions)
+                    url = f"{self.graph_endpoint}/me/mailFolders/{folder}/messages"
                     
                     params = {
                         "$filter": f"receivedDateTime ge {start_date_str}",
@@ -277,7 +279,7 @@ class ModernWorkEmailExtractor:
                 logger.info(f"Processing email {i}/{len(emails)}: {subject[:50]}...")
                 
                 # Get attachments for this email
-                url = f"{self.graph_endpoint}/users/{email_address}/messages/{email_id}/attachments"
+                url = f"{self.graph_endpoint}/me/messages/{email_id}/attachments"
                 headers = {
                     "Authorization": f"Bearer {self.access_token}",
                     "Content-Type": "application/json"
