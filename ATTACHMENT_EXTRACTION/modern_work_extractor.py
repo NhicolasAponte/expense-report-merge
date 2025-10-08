@@ -89,8 +89,6 @@ OUTPUT_BASE_DIR = r"C:\Users\nflores\Desktop\work_attachments_modern"
 # Microsoft Graph API scopes required
 SCOPES = [
     "https://graph.microsoft.com/Mail.Read",
-    "https://graph.microsoft.com/Mail.ReadWrite",
-    "https://graph.microsoft.com/offline_access"
 ]
 
 # Account configurations
