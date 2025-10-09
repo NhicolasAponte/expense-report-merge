@@ -296,8 +296,8 @@ class StatementProcessor:
     
     def extract_with_positional_parsing(self, input_pdf_path: str) -> List[InvoiceLineItem]:
         """
-        Extract invoice items using positional/columnar parsing with pdfplumber coordinates.
-        This approach uses the actual column positions to determine Purchase Order vs Job Name.
+        Extract invoice items using positional/columnar parsing with layout-aware text extraction.
+        This approach uses pdfplumber's layout=True to preserve column positioning.
         
         Returns:
             List of InvoiceLineItem objects
@@ -307,42 +307,208 @@ class StatementProcessor:
         try:
             with pdfplumber.open(input_pdf_path) as pdf:
                 for page_num, page in enumerate(pdf.pages, 1):
-                    # Extract words with position information
-                    words = page.extract_words(extra_attrs=["x0", "x1", "top", "bottom"])
+                    # Use layout-aware text extraction to preserve column structure
+                    page_text = page.extract_text(layout=True)
                     
-                    if not words:
-                        continue
-                    
-                    # Group words by lines (similar top position)
-                    lines_dict = self.group_words_by_lines(words)
-                    
-                    # Find header line to establish column boundaries
-                    column_boundaries = self.find_column_boundaries(lines_dict)
-                    
-                    if not column_boundaries:
-                        print(f"Page {page_num}: Could not establish column boundaries, falling back to text parsing")
+                    if not page_text:
                         continue
                     
                     # Extract header data if this is the first page
                     if page_num == 1 and not self.header_data:
-                        page_text = page.extract_text()
-                        self.header_data = self.extract_header_data(page_text)
+                        # Use standard text extraction for header parsing (it works fine)
+                        standard_text = page.extract_text()
+                        self.header_data = self.extract_header_data(standard_text)
                     
                     # Skip if header_data is not available
                     if not self.header_data:
                         print(f"Page {page_num}: Header data not available, skipping")
                         continue
                     
-                    # Process invoice lines using positional data
-                    page_items = self.parse_invoice_lines_positional(lines_dict, column_boundaries, self.header_data)
+                    # Find column boundaries and process invoice lines using layout-aware text
+                    column_boundaries = self.find_column_boundaries_from_layout(page_text)
+                    
+                    if not column_boundaries:
+                        print(f"Page {page_num}: Could not establish column boundaries from layout, falling back to text parsing")
+                        continue
+                    
+                    # Process invoice lines using positional data from layout-aware text
+                    page_items = self.parse_invoice_lines_from_layout(page_text, column_boundaries, self.header_data)
                     invoice_items.extend(page_items)
                     
-                    print(f"Page {page_num}: Extracted {len(page_items)} items using positional parsing")
+                    print(f"Page {page_num}: Extracted {len(page_items)} items using layout-aware positional parsing")
         
         except Exception as e:
             print(f"Error in positional parsing: {e}")
             
         return invoice_items
+    
+    def find_column_boundaries_from_layout(self, layout_text: str) -> Optional[Dict[str, int]]:
+        """
+        Find column boundaries from layout-aware text extraction.
+        This uses the preserved spacing to determine column positions.
+        
+        Args:
+            layout_text: Text extracted with layout=True
+            
+        Returns:
+            Dictionary with column start positions or None if not found
+        """
+        lines = layout_text.split('\n')
+        
+        for line in lines:
+            # Look for the header line
+            if ('Date' in line and 'Invoice' in line and 
+                'PurchaseOrder' in line and 'JobName' in line and 
+                'Charge' in line):
+                
+                # Find the position of each column header
+                po_start = line.find('PurchaseOrder')
+                job_start = line.find('JobName')
+                charge_start = line.find('Charge')
+                
+                if po_start >= 0 and job_start >= 0 and charge_start >= 0:
+                    print(f"Found layout column boundaries - PO: {po_start}, Job: {job_start}, Charge: {charge_start}")
+                    return {
+                        'purchase_order_start': po_start,
+                        'job_name_start': job_start,
+                        'charge_start': charge_start
+                    }
+        
+        print("No suitable header line found for layout column boundaries")
+        return None
+    
+    def parse_invoice_lines_from_layout(self, layout_text: str, 
+                                       column_boundaries: Dict[str, int], 
+                                       header_data: StatementHeaderData) -> List[InvoiceLineItem]:
+        """
+        Parse invoice lines using layout-aware text with intelligent field boundary detection.
+        
+        Args:
+            layout_text: Text extracted with layout=True
+            column_boundaries: Dictionary with column start positions
+            header_data: Previously extracted header information
+            
+        Returns:
+            List of InvoiceLineItem objects
+        """
+        invoice_items = []
+        lines = layout_text.split('\n')
+        
+        po_start = column_boundaries['purchase_order_start']
+        job_start = column_boundaries['job_name_start']
+        charge_start = column_boundaries['charge_start']
+        
+        for line in lines:
+            # Check if this is an invoice line (contains date and invoice number patterns)
+            if re.search(r'\d{1,2}/\d{1,2}/\d{4}', line) and re.search(r'[MDW]?\d+[A-Z]*(?:-(?:IN|CM|PP))?', line):
+                # Skip summary lines
+                if any(stop_word in line.upper() for stop_word in ['TOTAL:', 'CURRENT', 'REMIT PAYMENT']):
+                    continue
+                
+                try:
+                    # Extract basic data (date, invoice, amounts) using regex on the line
+                    invoice_item = self.parse_basic_invoice_data(line.strip(), header_data)
+                    
+                    if invoice_item:
+                        # Extract the text section that contains PO and Job names
+                        text_section = line[po_start:charge_start].strip() if len(line) > po_start else ""
+                        
+                        if invoice_item.invoice_number.endswith('-PP'):
+                            # PP transactions have no purchase order, everything goes to job name
+                            invoice_item.purchase_order = ""
+                            # Clean and assign to job name
+                            job_text = re.sub(r'\d+\.\d+', '', text_section).strip()
+                            invoice_item.job_name = job_text
+                        else:
+                            # Normal transactions: intelligently split between PO and Job fields
+                            po_text, job_text = self.smart_split_po_job_fields(text_section, line, po_start, job_start, charge_start)
+                            
+                            invoice_item.purchase_order = po_text
+                            invoice_item.job_name = job_text
+                        
+                        invoice_items.append(invoice_item)
+                        print(f"Layout parse: {invoice_item.invoice_number} -> PO:'{invoice_item.purchase_order}' Job:'{invoice_item.job_name}'")
+                
+                except Exception as e:
+                    print(f"Error parsing line with layout: {line.strip()}: {e}")
+        
+        return invoice_items
+    
+    def smart_split_po_job_fields(self, text_section: str, full_line: str, po_start: int, job_start: int, charge_start: int) -> Tuple[str, str]:
+        """
+        Intelligently split the text section between Purchase Order and Job Name fields.
+        Uses multiple strategies to determine the optimal split point.
+        
+        Args:
+            text_section: The text content between PO start and Charge start
+            full_line: The complete line for position analysis
+            po_start: Purchase Order column start position
+            job_start: Job Name column start position  
+            charge_start: Charge column start position
+            
+        Returns:
+            Tuple of (purchase_order_text, job_name_text)
+        """
+        # Clean numeric contamination first
+        clean_text = re.sub(r'\d+\.\d+', '', text_section).strip()
+        
+        if not clean_text:
+            return "", ""
+        
+        # Strategy 1: Look for natural word boundaries around the job_start position
+        relative_job_start = job_start - po_start
+        
+        # Check if there's a clear word break near the job_start boundary
+        words = clean_text.split()
+        
+        if len(words) <= 1:
+            # Single word or empty - determine which field it belongs to
+            if len(clean_text) <= 14:  # Short names likely go to PO
+                return clean_text, ""
+            else:  # Long names might be job names
+                return "", clean_text
+        
+        # Strategy 2: For multi-word content, find the best split point
+        if len(words) == 2:
+            # Two words: check positioning and common patterns
+            word1, word2 = words
+            
+            # Special case: "STOCK SHEETS", "STOCK LAMI" should be PO
+            if word1 == "STOCK":
+                return clean_text, ""
+            
+            # For names like "ERNEST HALF", check positions in the original line
+            word1_pos = full_line.find(word1, po_start)
+            word2_pos = full_line.find(word2, po_start)
+            
+            if word1_pos >= 0 and word2_pos >= 0:
+                # If second word starts near or after job_start, split there
+                if word2_pos >= job_start - 2:  # Small tolerance
+                    return word1, word2
+                # If both words are well before job_start, keep together as PO
+                elif word2_pos < job_start - 4:
+                    return clean_text, ""
+            
+            # Default: first word to PO, second to Job
+            return word1, word2
+        
+        elif len(words) == 3:
+            # Three words: likely "FIRST SECOND THIRD" -> PO="FIRST", Job="SECOND THIRD"
+            return words[0], " ".join(words[1:])
+        
+        elif len(words) >= 4:
+            # Many words: split roughly in the middle, favoring Job field for longer content
+            mid_point = len(words) // 2
+            return " ".join(words[:mid_point]), " ".join(words[mid_point:])
+        
+        # Fallback: use the original boundary-based approach
+        po_section = full_line[po_start:job_start].strip() if len(full_line) > po_start else ""
+        job_section = full_line[job_start:charge_start].strip() if len(full_line) > job_start else ""
+        
+        po_clean = re.sub(r'\d+\.\d+', '', po_section).strip()
+        job_clean = re.sub(r'\d+\.\d+', '', job_section).strip()
+        
+        return po_clean, job_clean
     
     def group_words_by_lines(self, words: List[Dict]) -> Dict[float, List[Dict]]:
         """Group words by their vertical position (lines)."""
@@ -363,15 +529,14 @@ class StatementProcessor:
         return lines_dict
     
     def find_column_boundaries(self, lines_dict: Dict[float, List[Dict]]) -> Optional[Dict[str, float]]:
-        """Find column boundaries from the header line."""
+        """Find column boundaries from the header line using exact word matches."""
         for y_pos, line_words in lines_dict.items():
             line_text = " ".join([w['text'] for w in line_words])
             
-            # Look for the header line with more flexible matching
+            # Look for the header line with exact matches
             if ('Date' in line_text and 'Invoice' in line_text and 
-                ('Purchase' in line_text or 'PO' in line_text) and
-                ('Job' in line_text or 'Name' in line_text) and 
-                ('Charge' in line_text or 'Amount' in line_text)):
+                'PurchaseOrder' in line_text and 'JobName' in line_text and 
+                'Charge' in line_text):
                 
                 po_start = None
                 job_start = None
@@ -379,14 +544,12 @@ class StatementProcessor:
                 
                 for word in line_words:
                     word_text = word['text']
-                    # More flexible purchase order detection
-                    if 'Purchase' in word_text or (word_text == 'PO'):
+                    # Exact word matching for more precision
+                    if word_text == 'PurchaseOrder':
                         po_start = word['x0']
-                    # Use 'Job' word position, not 'Name' - this is the key fix!
-                    elif word_text == 'Job':
+                    elif word_text == 'JobName':
                         job_start = word['x0']
-                    # More flexible charge detection
-                    elif 'Charge' in word_text or 'Amount' in word_text:
+                    elif word_text == 'Charge':
                         charge_start = word['x0']
                 
                 if po_start and job_start and charge_start:
@@ -426,17 +589,42 @@ class StatementProcessor:
                     invoice_item = self.parse_basic_invoice_data(line_text, header_data)
                     
                     if invoice_item:
-                        # Override purchase_order and job_name with positional data
-                        po_words = [w for w in line_words if po_start <= w['x0'] < job_start]
-                        job_words = [w for w in line_words if job_start <= w['x0'] < charge_start]
+                        # Assign words to columns based on position, with special logic for field boundaries
+                        po_words = []
+                        job_words = []
+                        
+                        for word in line_words:
+                            word_x = word['x0']
+                            word_text = word['text']
+                            
+                            # Skip date, invoice number, and numeric fields
+                            if (re.match(r'\d{1,2}/\d{1,2}/\d{4}', word_text) or  # Date
+                                re.match(r'[MDW]?\d+[A-Z]*(?:-(?:IN|CM|PP))?', word_text) or  # Invoice number
+                                re.match(r'\d+\.?\d*', word_text)):  # Numeric amounts
+                                continue
+                            
+                            # For PP transactions, everything between invoice and charge goes to Job Name
+                            if invoice_item.invoice_number.endswith('-PP'):
+                                if job_start <= word_x < charge_start:
+                                    job_words.append(word_text)
+                            else:
+                                # Normal assignment logic with smart boundary handling
+                                if po_start <= word_x < job_start:
+                                    po_words.append(word_text)
+                                elif job_start <= word_x < charge_start:
+                                    job_words.append(word_text)
+                                # Special case: if a word is very close to job_start boundary (within 5 points)
+                                # and we already have PO words, assign it to Job Name
+                                elif (job_start - 5) <= word_x < job_start and po_words:
+                                    job_words.append(word_text)
                         
                         # Handle PP transactions specially - they have no purchase order
                         if invoice_item.invoice_number.endswith('-PP'):
                             invoice_item.purchase_order = ""
-                            invoice_item.job_name = " ".join([w['text'] for w in job_words])
+                            invoice_item.job_name = " ".join(job_words)
                         else:
-                            invoice_item.purchase_order = " ".join([w['text'] for w in po_words])
-                            invoice_item.job_name = " ".join([w['text'] for w in job_words])
+                            invoice_item.purchase_order = " ".join(po_words)
+                            invoice_item.job_name = " ".join(job_words)
                         
                         invoice_items.append(invoice_item)
                         print(f"Positional parse: {invoice_item.invoice_number} -> PO:'{invoice_item.purchase_order}' Job:'{invoice_item.job_name}'")
