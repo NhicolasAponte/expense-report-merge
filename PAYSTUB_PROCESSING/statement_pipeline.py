@@ -294,6 +294,197 @@ class StatementProcessor:
             print(f"Error parsing invoice line '{line}': {e}")
             return None
     
+    def extract_with_positional_parsing(self, input_pdf_path: str) -> List[InvoiceLineItem]:
+        """
+        Extract invoice items using positional/columnar parsing with pdfplumber coordinates.
+        This approach uses the actual column positions to determine Purchase Order vs Job Name.
+        
+        Returns:
+            List of InvoiceLineItem objects
+        """
+        invoice_items = []
+        
+        try:
+            with pdfplumber.open(input_pdf_path) as pdf:
+                for page_num, page in enumerate(pdf.pages, 1):
+                    # Extract words with position information
+                    words = page.extract_words(extra_attrs=["x0", "x1", "top", "bottom"])
+                    
+                    if not words:
+                        continue
+                    
+                    # Group words by lines (similar top position)
+                    lines_dict = self.group_words_by_lines(words)
+                    
+                    # Find header line to establish column boundaries
+                    column_boundaries = self.find_column_boundaries(lines_dict)
+                    
+                    if not column_boundaries:
+                        print(f"Page {page_num}: Could not establish column boundaries, falling back to text parsing")
+                        continue
+                    
+                    # Extract header data if this is the first page
+                    if page_num == 1 and not self.header_data:
+                        page_text = page.extract_text()
+                        self.header_data = self.extract_header_data(page_text)
+                    
+                    # Skip if header_data is not available
+                    if not self.header_data:
+                        print(f"Page {page_num}: Header data not available, skipping")
+                        continue
+                    
+                    # Process invoice lines using positional data
+                    page_items = self.parse_invoice_lines_positional(lines_dict, column_boundaries, self.header_data)
+                    invoice_items.extend(page_items)
+                    
+                    print(f"Page {page_num}: Extracted {len(page_items)} items using positional parsing")
+        
+        except Exception as e:
+            print(f"Error in positional parsing: {e}")
+            
+        return invoice_items
+    
+    def group_words_by_lines(self, words: List[Dict]) -> Dict[float, List[Dict]]:
+        """Group words by their vertical position (lines)."""
+        lines_dict = {}
+        tolerance = 3  # pixels
+        
+        for word in words:
+            # Round to nearest tolerance to group words on same line
+            y_key = round(word['top'] / tolerance) * tolerance
+            if y_key not in lines_dict:
+                lines_dict[y_key] = []
+            lines_dict[y_key].append(word)
+        
+        # Sort words within each line by x position
+        for y_pos in lines_dict:
+            lines_dict[y_pos].sort(key=lambda w: w['x0'])
+            
+        return lines_dict
+    
+    def find_column_boundaries(self, lines_dict: Dict[float, List[Dict]]) -> Optional[Dict[str, float]]:
+        """Find column boundaries from the header line."""
+        for y_pos, line_words in lines_dict.items():
+            line_text = " ".join([w['text'] for w in line_words])
+            
+            # Look for the header line with more flexible matching
+            if ('Date' in line_text and 'Invoice' in line_text and 
+                ('Purchase' in line_text or 'PO' in line_text) and
+                ('Job' in line_text or 'Name' in line_text) and 
+                ('Charge' in line_text or 'Amount' in line_text)):
+                
+                po_start = None
+                job_start = None
+                charge_start = None
+                
+                for word in line_words:
+                    word_text = word['text']
+                    # More flexible purchase order detection
+                    if 'Purchase' in word_text or (word_text == 'PO'):
+                        po_start = word['x0']
+                    # Use 'Job' word position, not 'Name' - this is the key fix!
+                    elif word_text == 'Job':
+                        job_start = word['x0']
+                    # More flexible charge detection
+                    elif 'Charge' in word_text or 'Amount' in word_text:
+                        charge_start = word['x0']
+                
+                if po_start and job_start and charge_start:
+                    print(f"Found column boundaries - PO: {po_start}, Job: {job_start}, Charge: {charge_start}")
+                    return {
+                        'purchase_order_start': po_start,
+                        'job_name_start': job_start,
+                        'charge_start': charge_start
+                    }
+                else:
+                    print(f"Header found but missing boundaries: PO={po_start}, Job={job_start}, Charge={charge_start}")
+        
+        print("No suitable header line found for column boundaries")
+        return None
+    
+    def parse_invoice_lines_positional(self, lines_dict: Dict[float, List[Dict]], 
+                                     column_boundaries: Dict[str, float], 
+                                     header_data: StatementHeaderData) -> List[InvoiceLineItem]:
+        """Parse invoice lines using positional column data."""
+        invoice_items = []
+        
+        po_start = column_boundaries['purchase_order_start']
+        job_start = column_boundaries['job_name_start']
+        charge_start = column_boundaries['charge_start']
+        
+        for y_pos, line_words in lines_dict.items():
+            line_text = " ".join([w['text'] for w in line_words])
+            
+            # Check if this is an invoice line (contains date and invoice number patterns)
+            if re.search(r'\d{1,2}/\d{1,2}/\d{4}', line_text) and re.search(r'[MDW]?\d+[A-Z]*(?:-(?:IN|CM|PP))?', line_text):
+                # Skip summary lines
+                if any(stop_word in line_text.upper() for stop_word in ['TOTAL:', 'CURRENT', 'REMIT PAYMENT']):
+                    continue
+                
+                try:
+                    # Extract basic data (date, invoice, amounts) using regex
+                    invoice_item = self.parse_basic_invoice_data(line_text, header_data)
+                    
+                    if invoice_item:
+                        # Override purchase_order and job_name with positional data
+                        po_words = [w for w in line_words if po_start <= w['x0'] < job_start]
+                        job_words = [w for w in line_words if job_start <= w['x0'] < charge_start]
+                        
+                        # Handle PP transactions specially - they have no purchase order
+                        if invoice_item.invoice_number.endswith('-PP'):
+                            invoice_item.purchase_order = ""
+                            invoice_item.job_name = " ".join([w['text'] for w in job_words])
+                        else:
+                            invoice_item.purchase_order = " ".join([w['text'] for w in po_words])
+                            invoice_item.job_name = " ".join([w['text'] for w in job_words])
+                        
+                        invoice_items.append(invoice_item)
+                        print(f"Positional parse: {invoice_item.invoice_number} -> PO:'{invoice_item.purchase_order}' Job:'{invoice_item.job_name}'")
+                
+                except Exception as e:
+                    print(f"Error parsing line positionally: {line_text}: {e}")
+        
+        return invoice_items
+    
+    def parse_basic_invoice_data(self, line: str, header_data: StatementHeaderData) -> Optional[InvoiceLineItem]:
+        """Parse basic invoice data (date, invoice#, amounts) without middle section."""
+        try:
+            # Use existing regex patterns to extract date, invoice, and amounts
+            pattern = r'^(\d{1,2}/\d{1,2}/\d{4})\s+([MDW]?\d+[A-Z]*(?:-(?:IN|CM|PP))?)\s+(.*?)\s+([\d,]+\.?\d*)(-?)\s+([\d,]+\.?\d*)(-?)$'
+            match = re.match(pattern, line)
+            
+            if not match:
+                return None
+            
+            invoice_date = match.group(1)
+            invoice_number = match.group(2)
+            charge = match.group(4) + match.group(5)
+            credit = ""
+            balance = match.group(6) + match.group(7)
+            
+            # Handle credit transactions (PP and CM)
+            if invoice_number.endswith('-PP') or invoice_number.endswith('-CM'):
+                credit = charge
+                charge = ""
+            
+            return InvoiceLineItem(
+                file_name=header_data.file_name,
+                customer_name=header_data.customer_name,
+                account_number=header_data.account_number,
+                statement_date=header_data.statement_date,
+                invoice_date=invoice_date,
+                invoice_number=invoice_number,
+                purchase_order="",  # Will be set by positional parsing
+                job_name="",       # Will be set by positional parsing
+                charge=charge,
+                credit=credit,
+                balance=balance
+            )
+            
+        except Exception as e:
+            print(f"Error in basic parsing: {e}")
+            return None
+    
     def parse_middle_section(self, middle_section: str) -> Tuple[str, str]:
         """
         Parse the middle section between invoice number and charge to extract
@@ -387,24 +578,35 @@ class StatementProcessor:
             print(f"Processing: {self.filename}")
             print(f"{'='*60}")
             
-            # Step 1: Extract text using pdfplumber
-            pages_text = self.extract_text_with_pdfplumber()
-            if not pages_text:
-                print("No text extracted from PDF")
-                return False
+            # Try positional parsing first (more accurate for columnar data)
+            print("Attempting positional parsing...")
+            positional_items = self.extract_with_positional_parsing(self.input_pdf_path)
             
-            # Step 2: Extract header data from first page
-            first_page_text = pages_text[0][1]
-            self.header_data = self.extract_header_data(first_page_text)
-            
-            if not self.header_data:
-                print("Failed to extract header data")
-                return False
-            
-            # Step 3: Extract invoice items from all pages
-            for page_num, text in pages_text:
-                page_items = self.extract_invoice_items(text, self.header_data)
-                self.invoice_items.extend(page_items)
+            if positional_items:
+                print(f"✅ Positional parsing successful: {len(positional_items)} items extracted")
+                self.invoice_items = positional_items
+            else:
+                print("⚠️ Positional parsing failed, falling back to text-based parsing...")
+                
+                # Fallback to original text-based approach
+                # Step 1: Extract text using pdfplumber
+                pages_text = self.extract_text_with_pdfplumber()
+                if not pages_text:
+                    print("No text extracted from PDF")
+                    return False
+                
+                # Step 2: Extract header data from first page
+                first_page_text = pages_text[0][1]
+                self.header_data = self.extract_header_data(first_page_text)
+                
+                if not self.header_data:
+                    print("Failed to extract header data")
+                    return False
+                
+                # Step 3: Extract invoice items from all pages using text parsing
+                for page_num, text in pages_text:
+                    page_items = self.extract_invoice_items(text, self.header_data)
+                    self.invoice_items.extend(page_items)
             
             # Step 4: Generate CSV output
             output_dir = setup_output_directory("statement_results")
@@ -412,7 +614,7 @@ class StatementProcessor:
             
             if csv_path:
                 print(f"\n✅ Processing completed successfully!")
-                print(f"📄 Header data extracted: {self.header_data.customer_name}")
+                print(f"📄 Header data extracted: {self.header_data.customer_name if self.header_data else 'N/A'}")
                 print(f"📋 Invoice items extracted: {len(self.invoice_items)}")
                 print(f"💾 CSV saved: {csv_path}")
                 return True
