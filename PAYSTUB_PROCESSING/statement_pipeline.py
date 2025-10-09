@@ -223,34 +223,54 @@ class StatementProcessor:
         - 7/22/2025 M708796-IN 13341 THE BALKAN 548.31 548.31
         - 8/28/2025 M708476-IN Labette Bank Labette Bank Doors 6,051.84 6,051.84
         - 7/31/2025 M711015-IN 13367 110.89 110.89 (missing job name)
+        - 8/28/2025 M715393-CM 2338559 Pcc Display 127.48 127.48- (CM credit memo with negative balance)
+        - 8/14/2025 713936A-PP Ref: ACH081425 96.11 96.11- (PP prepaid with negative balance)
         """
         try:
-            # Basic regex to extract key components
-            # Start with date, then invoice number, then flexible middle section, then amounts
-            pattern = r'^(\d{1,2}/\d{1,2}/\d{4})\s+([MD]\d+(?:-IN)?)\s+(.*?)\s+([\d,]+\.?\d*)\s+([\d,]+\.?\d*)$'
+            # Enhanced regex to extract key components
+            # Start with date, then invoice number (flexible patterns), then middle section, then amounts (including negatives)
+            # Updated to handle: M/D/W prefixes, numeric prefixes (713936A), -IN/-CM/-PP suffixes, negative amounts
+            pattern = r'^(\d{1,2}/\d{1,2}/\d{4})\s+([MDW]?\d+[A-Z]*(?:-(?:IN|CM|PP))?)\s+(.*?)\s+([\d,]+\.?\d*)(-?)\s+([\d,]+\.?\d*)(-?)$'
             match = re.match(pattern, line)
             
             if not match:
-                # Try alternative pattern with credit column
-                pattern_with_credit = r'^(\d{1,2}/\d{1,2}/\d{4})\s+([MD]\d+(?:-IN)?)\s+(.*?)\s+([\d,]+\.?\d*)\s+([\d,]+\.?\d*)\s+([\d,]+\.?\d*)$'
+                # Try alternative pattern with credit column (charge, credit, balance)
+                pattern_with_credit = r'^(\d{1,2}/\d{1,2}/\d{4})\s+([MDW]?\d+[A-Z]*(?:-(?:IN|CM|PP))?)\s+(.*?)\s+([\d,]+\.?\d*)(-?)\s+([\d,]+\.?\d*)(-?)\s+([\d,]+\.?\d*)(-?)$'
                 match = re.match(pattern_with_credit, line)
                 
                 if match:
                     invoice_date = match.group(1)
                     invoice_number = match.group(2)
                     middle_section = match.group(3).strip()
-                    charge = match.group(4)
-                    credit = match.group(5)
-                    balance = match.group(6)
+                    charge = match.group(4) + match.group(5)  # Combine amount and negative sign
+                    credit = match.group(6) + match.group(7)  # Combine amount and negative sign
+                    balance = match.group(8) + match.group(9)  # Combine amount and negative sign
+                    
+                    # Special handling for credit transactions (PP and CM suffixes) in 3-column format
+                    # These are credit transactions, but the amounts might be misaligned
+                    if invoice_number.endswith('-PP') or invoice_number.endswith('-CM'):
+                        # For PP/CM transactions, if we have 3 amounts but it's really CREDIT BALANCE format
+                        # The "charge" is actually empty, "credit" is the credit amount, "balance" is balance
+                        # But our regex might have captured wrong - let's adjust
+                        pass  # The 3-column format should be handled correctly already
+                    
                 else:
                     return None
             else:
                 invoice_date = match.group(1)
                 invoice_number = match.group(2)
                 middle_section = match.group(3).strip()
-                charge = match.group(4)
+                charge = match.group(4) + match.group(5)  # Combine amount and negative sign
                 credit = ""  # No credit column in this format
-                balance = match.group(5)
+                balance = match.group(6) + match.group(7)  # Combine amount and negative sign
+            
+            # Special handling for credit transactions (PP and CM suffixes)
+            # These are credit transactions where the first amount should be in the credit column
+            if invoice_number.endswith('-PP') or invoice_number.endswith('-CM'):
+                # For PP/CM transactions: DATE INVOICE MIDDLE CREDIT BALANCE
+                # Move charge to credit column and clear charge
+                credit = charge
+                charge = ""
             
             # Parse middle section for purchase_order and job_name
             # This is the tricky part as the format varies
