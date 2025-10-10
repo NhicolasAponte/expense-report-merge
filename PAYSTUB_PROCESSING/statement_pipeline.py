@@ -152,9 +152,9 @@ class StatementProcessor:
                 if account_match:
                     account_number = account_match.group(1)
                     
-                    # Customer name is typically 2-3 lines before account number
+                    # Customer name is typically 1-2 lines before account number line
                     # Look backwards for the customer company name
-                    for j in range(max(0, i-5), i):
+                    for j in range(max(0, i-3), i):
                         candidate_line = lines[j].strip()
                         # Skip common header elements and look for company names
                         if (candidate_line and 
@@ -164,25 +164,39 @@ class StatementProcessor:
                             not candidate_line.startswith('StatementDate') and
                             not candidate_line.startswith('Account') and
                             len(candidate_line) > 5 and
-                            not candidate_line.startswith('Page')):
-                            # Look for company indicators
-                            if any(indicator in candidate_line.upper() for indicator in ['LLC', 'INC', 'CORP', 'GLASS', 'DEPOT', 'SYSTEMS']):
+                            not candidate_line.startswith('Page') and
+                            # Exclude address patterns (city, state zip)
+                            not re.search(r'^[A-Za-z\s]+,\s*[A-Z]{2}\s+\d{5}', candidate_line) and
+                            # Exclude lines that are mostly street addresses 
+                            not re.search(r'^\d+\s+[A-Za-z\s]+(Dr|St|Ave|Blvd|Rd|Court|Way|Plaza)', candidate_line, re.IGNORECASE)):
+                            
+                            # First priority: Lines with strong company indicators
+                            if any(indicator in candidate_line.upper() for indicator in ['LLC', 'INC', 'CORP', 'GLASS', 'DEPOT', 'SYSTEMS', 'COMPANY', 'CO.', 'LTD']):
                                 customer_name = candidate_line
                                 break
+                            # Second priority: Lines that look like company names (capital letters, multiple words)
+                            elif (len(candidate_line.split()) >= 2 and
+                                  not candidate_line.islower() and
+                                  not re.search(r'^\d+', candidate_line) and  # Doesn't start with number (address)
+                                  # Not a typical address pattern
+                                  not re.search(r'\d{5}', candidate_line)):  # No zip code
+                                if not customer_name:  # Only if we haven't found a better match
+                                    customer_name = candidate_line
                     break
             
             # Fallback customer name extraction if not found above
             if not customer_name:
-                # Look for lines between header and account number that contain company-like text
-                for i, line in enumerate(lines[5:15], 5):  # Check lines 5-15
-                    if (line.strip() and 
-                        not re.search(r'\d{1,2}/\d{1,2}/\d{4}', line) and
-                        not line.startswith('P.O. Box') and
-                        not line.startswith('Manhattan') and
-                        len(line.strip()) > 10 and
-                        ',' in line):  # Company names often have commas
-                        customer_name = line.strip()
-                        break
+                # Look for the line immediately after "Account #" - this is usually the customer name
+                for i, line in enumerate(lines):
+                    if line.strip() == "Account #" and i + 1 < len(lines):
+                        candidate = lines[i + 1].strip()
+                        # Make sure it's not an address line
+                        if (candidate and 
+                            len(candidate) > 5 and
+                            not re.search(r'^[A-Za-z\s]+,\s*[A-Z]{2}\s+\d{5}', candidate) and
+                            not re.search(r'^\d+\s+[A-Za-z\s]+(Dr|St|Ave|Blvd|Rd|Court|Way|Plaza)', candidate, re.IGNORECASE)):
+                            customer_name = candidate
+                            break
             
             print(f"Extracted header - Customer: '{customer_name}', Account: '{account_number}', Date: '{statement_date}'")
             
