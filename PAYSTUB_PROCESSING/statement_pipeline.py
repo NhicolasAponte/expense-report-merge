@@ -700,26 +700,69 @@ class StatementProcessor:
         
         return purchase_order, job_name
     
-    def generate_csv_output(self, output_dir: str) -> str:
+    def generate_csv_output(self, output_dir: str) -> Dict[str, str]:
         """
-        Generate CSV file with all extracted statement data.
+        Generate separate CSV files based on invoice number suffixes.
+        - statement_data.csv: Regular invoices (no special suffix)
+        - cm_statement.csv: Credit memo transactions (-CM)
+        - pp_statement.csv: Payment transactions (-PP)
         
         Args:
-            output_dir: Directory to save the CSV file
+            output_dir: Directory to save the CSV files
             
         Returns:
-            Path to the generated CSV file
+            Dictionary with paths to generated CSV files
         """
         if not self.invoice_items:
             print("No invoice items to export")
-            return ""
+            return {}
         
-        # Create output filename
-        base_name = get_pdf_filename_without_extension(self.input_pdf_path)
-        csv_filename = f"{base_name}_statement_data.csv"
-        csv_path = os.path.join(output_dir, csv_filename)
+        # Separate items by invoice number suffix
+        regular_items = []  # Default invoices (no special suffix)
+        cm_items = []       # Credit memo transactions (-CM)
+        pp_items = []       # Payment transactions (-PP)
         
-        # CSV headers
+        for item in self.invoice_items:
+            if item.invoice_number.endswith('-CM'):
+                cm_items.append(item)
+            elif item.invoice_number.endswith('-PP'):
+                pp_items.append(item)
+            else:
+                regular_items.append(item)
+        
+        generated_files = {}
+        
+        # Generate statement_data.csv for regular invoices
+        if regular_items:
+            regular_csv_path = os.path.join(output_dir, "statement_data.csv")
+            self._write_csv_file(regular_csv_path, regular_items)
+            generated_files['statement_data'] = regular_csv_path
+            print(f"Generated statement_data.csv: {len(regular_items)} regular invoice items")
+        
+        # Generate cm_statement.csv for credit memo transactions
+        if cm_items:
+            cm_csv_path = os.path.join(output_dir, "cm_statement.csv")
+            self._write_csv_file(cm_csv_path, cm_items)
+            generated_files['cm_statement'] = cm_csv_path
+            print(f"Generated cm_statement.csv: {len(cm_items)} credit memo items")
+        
+        # Generate pp_statement.csv for payment transactions
+        if pp_items:
+            pp_csv_path = os.path.join(output_dir, "pp_statement.csv")
+            self._write_csv_file(pp_csv_path, pp_items)
+            generated_files['pp_statement'] = pp_csv_path
+            print(f"Generated pp_statement.csv: {len(pp_items)} payment items")
+        
+        return generated_files
+    
+    def _write_csv_file(self, csv_path: str, items: List[InvoiceLineItem]) -> None:
+        """
+        Write invoice items to a CSV file.
+        
+        Args:
+            csv_path: Path to the CSV file to create
+            items: List of InvoiceLineItem objects to write
+        """
         headers = [
             'file_name', 'customer_name', 'account_number', 'statement_date',
             'invoice_date', 'invoice_number', 'purchase_order', 'job_name',
@@ -731,7 +774,7 @@ class StatementProcessor:
                 writer = csv.writer(csvfile)
                 writer.writerow(headers)
                 
-                for item in self.invoice_items:
+                for item in items:
                     writer.writerow([
                         item.file_name,
                         item.customer_name,
@@ -747,12 +790,9 @@ class StatementProcessor:
                     ])
             
             print(f"CSV exported: {csv_path}")
-            print(f"Exported {len(self.invoice_items)} invoice items")
-            return csv_path
             
         except Exception as e:
             print(f"Error generating CSV: {e}")
-            return ""
     
     def process_statement(self) -> bool:
         """
@@ -798,13 +838,14 @@ class StatementProcessor:
             
             # Step 4: Generate CSV output
             output_dir = setup_output_directory("statement_results")
-            csv_path = self.generate_csv_output(output_dir)
+            generated_files = self.generate_csv_output(output_dir)
             
-            if csv_path:
+            if generated_files:
                 print(f"\n✅ Processing completed successfully!")
                 print(f"📄 Header data extracted: {self.header_data.customer_name if self.header_data else 'N/A'}")
                 print(f"📋 Invoice items extracted: {len(self.invoice_items)}")
-                print(f"💾 CSV saved: {csv_path}")
+                for file_type, file_path in generated_files.items():
+                    print(f"💾 CSV saved ({file_type}): {file_path}")
                 return True
             else:
                 print("❌ Failed to generate CSV output")
