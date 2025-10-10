@@ -14,15 +14,15 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 
-def extract_check_info(text: str) -> Optional[str]:
-    """Extract check information from the text."""
+def extract_check_info(text: str) -> tuple[Optional[str], Optional[str]]:
+    """Extract check information from the text, returning separate check ID and date."""
     # Look for pattern: Check: E000016062 6/23/2025
     check_pattern = r'Check:\s*([A-Z]\d+)\s+(\d{1,2}/\d{1,2}/\d{4})'
     match = re.search(check_pattern, text)
     if match:
-        check_number, check_date = match.groups()
-        return f"{check_number} {check_date}"
-    return None
+        check_id, check_date = match.groups()
+        return check_id, check_date
+    return None, None
 
 
 def extract_vendor_info(text: str) -> tuple[Optional[str], Optional[str]]:
@@ -49,7 +49,8 @@ def extract_invoice_line_items(text: str) -> List[Dict[str, str]]:
     # Look for pattern: date invoice_number comment amount discount net_amount
     for line in lines:
         # Look for date pattern at start of line followed by invoice data
-        invoice_pattern = r'(\d{1,2}/\d{1,2}/\d{4})\s+(\w+)\s+.*?(\d{1,3}(?:,\d{3})*\.\d{2})\s+(\d{1,3}(?:,\d{3})*\.\d{2})\s+(\d{1,3}(?:,\d{3})*\.\d{2})'
+        # Updated pattern to handle hyphens and other characters in invoice numbers
+        invoice_pattern = r'(\d{1,2}/\d{1,2}/\d{4})\s+([^\s]+)\s+.*?(\d{1,3}(?:,\d{3})*\.\d{2})\s+(\d{1,3}(?:,\d{3})*\.\d{2})\s+(\d{1,3}(?:,\d{3})*\.\d{2})'
         match = re.search(invoice_pattern, line)
         
         if match:
@@ -85,7 +86,8 @@ def process_remittance_pdf(pdf_path: str) -> Dict:
                 if page_text:
                     page_data = {
                         'page_number': page_num,
-                        'check_info': None,
+                        'check_id': None,
+                        'check_date': None,
                         'vendor_number': None,
                         'vendor_name': None,
                         'invoice_line_items': []
@@ -93,7 +95,9 @@ def process_remittance_pdf(pdf_path: str) -> Dict:
                     
                     # Extract data from this page only
                     print(f"    Extracting check information from page {page_num}...")
-                    page_data['check_info'] = extract_check_info(page_text)
+                    check_id, check_date = extract_check_info(page_text)
+                    page_data['check_id'] = check_id
+                    page_data['check_date'] = check_date
                     
                     print(f"    Extracting vendor information from page {page_num}...")
                     vendor_number, vendor_name = extract_vendor_info(page_text)
@@ -104,13 +108,13 @@ def process_remittance_pdf(pdf_path: str) -> Dict:
                     page_data['invoice_line_items'] = extract_invoice_line_items(page_text)
                     
                     print(f"    Page {page_num}: Found {len(page_data['invoice_line_items'])} invoice line items")
-                    if page_data['check_info']:
-                        print(f"    Page {page_num}: Check info: {page_data['check_info']}")
+                    if page_data['check_id'] and page_data['check_date']:
+                        print(f"    Page {page_num}: Check: {page_data['check_id']} {page_data['check_date']}")
                     if page_data['vendor_number'] and page_data['vendor_name']:
                         print(f"    Page {page_num}: Vendor: {page_data['vendor_number']} {page_data['vendor_name']}")
                     
                     # Only add page data if we found some relevant information
-                    if page_data['check_info'] or page_data['vendor_number'] or page_data['invoice_line_items']:
+                    if page_data['check_id'] or page_data['vendor_number'] or page_data['invoice_line_items']:
                         extracted_data['pages'].append(page_data)
             
             total_items = sum(len(page_data['invoice_line_items']) for page_data in extracted_data['pages'])
@@ -134,7 +138,7 @@ def export_to_csv(data: Dict, output_dir: str = "remittance_results") -> str:
     total_rows = 0
     with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
         fieldnames = [
-            'page_number', 'check_info', 'vendor_number', 'vendor_name', 'invoice_date', 
+            'page_number', 'check_id', 'check_date', 'vendor_number', 'vendor_name', 'invoice_date', 
             'invoice_number', 'amount_total', 'discount_total', 'net_total'
         ]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -147,7 +151,8 @@ def export_to_csv(data: Dict, output_dir: str = "remittance_results") -> str:
             for line_item in page_data['invoice_line_items']:
                 row = {
                     'page_number': page_data['page_number'],
-                    'check_info': page_data['check_info'],
+                    'check_id': page_data['check_id'],
+                    'check_date': page_data['check_date'],
                     'vendor_number': page_data['vendor_number'],
                     'vendor_name': page_data['vendor_name'],
                     **line_item
@@ -208,7 +213,7 @@ def export_all_to_csv(all_data: List[Dict], output_dir: str = "remittance_result
     total_rows = 0
     with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
         fieldnames = [
-            'source_file', 'page_number', 'check_info', 'vendor_number', 'vendor_name', 'invoice_date', 
+            'source_file', 'page_number', 'check_id', 'check_date', 'vendor_number', 'vendor_name', 'invoice_date', 
             'invoice_number', 'amount_total', 'discount_total', 'net_total'
         ]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -226,7 +231,8 @@ def export_all_to_csv(all_data: List[Dict], output_dir: str = "remittance_result
                     row = {
                         'source_file': file_name,
                         'page_number': page_data['page_number'],
-                        'check_info': page_data['check_info'],
+                        'check_id': page_data['check_id'],
+                        'check_date': page_data['check_date'],
                         'vendor_number': page_data['vendor_number'],
                         'vendor_name': page_data['vendor_name'],
                         **line_item
@@ -266,7 +272,8 @@ def main():
             total_invoices += invoice_count
             
             print(f"  Page {page_num}:")
-            print(f"    Check Info: {page_data['check_info']}")
+            print(f"    Check ID: {page_data['check_id']}")
+            print(f"    Check Date: {page_data['check_date']}")
             print(f"    Vendor Number: {page_data['vendor_number']}")
             print(f"    Vendor Name: {page_data['vendor_name']}")
             print(f"    Invoice Items: {invoice_count}")
@@ -321,7 +328,8 @@ if __name__ == "__main__":
                 for page_data in data['pages']:
                     page_num = page_data['page_number']
                     print(f"Page {page_num}:")
-                    print(f"  Check Info: {page_data['check_info']}")
+                    print(f"  Check ID: {page_data['check_id']}")
+                    print(f"  Check Date: {page_data['check_date']}")
                     print(f"  Vendor Number: {page_data['vendor_number']}")
                     print(f"  Vendor Name: {page_data['vendor_name']}")
                     print(f"  Invoice Items: {len(page_data['invoice_line_items'])}")
