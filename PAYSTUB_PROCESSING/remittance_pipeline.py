@@ -105,12 +105,14 @@ def process_remittance_pdf(pdf_path: str) -> Dict:
     return extracted_data
 
 
-def export_to_csv(data: Dict, output_path: str) -> None:
-    """Export extracted remittance data to CSV."""
-    print(f"Exporting data to CSV: {output_path}")
-    
+def export_to_csv(data: Dict, output_dir: str = "remittance_results") -> str:
+    """Export extracted remittance data to CSV with standard filename."""
     # Create output directory if it doesn't exist
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Always use the same filename
+    output_path = os.path.join(output_dir, "remittance_data.csv")
+    print(f"Exporting data to CSV: {output_path}")
     
     with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
         fieldnames = [
@@ -132,6 +134,8 @@ def export_to_csv(data: Dict, output_path: str) -> None:
             writer.writerow(row)
         
         print(f"  Exported {len(data['invoice_line_items'])} rows")
+    
+    return output_path
 
 
 def process_all_remittance_files(input_dir: str = "test-files") -> List[Dict]:
@@ -168,12 +172,14 @@ def process_all_remittance_files(input_dir: str = "test-files") -> List[Dict]:
     return all_data
 
 
-def export_all_to_csv(all_data: List[Dict], output_path: str) -> None:
-    """Export all remittance data to a single CSV file."""
-    print(f"Exporting all data to CSV: {output_path}")
-    
+def export_all_to_csv(all_data: List[Dict], output_dir: str = "remittance_results") -> str:
+    """Export all remittance data to a single CSV file named remittance_data.csv."""
     # Create output directory if it doesn't exist
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Always use the same filename
+    output_path = os.path.join(output_dir, "remittance_data.csv")
+    print(f"Exporting all data to CSV: {output_path}")
     
     total_rows = 0
     with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
@@ -202,6 +208,8 @@ def export_all_to_csv(all_data: List[Dict], output_path: str) -> None:
                 total_rows += 1
         
         print(f"  Exported {total_rows} total rows from {len(all_data)} files")
+    
+    return output_path
 
 
 def main():
@@ -236,13 +244,11 @@ def main():
     
     print(f"TOTAL: {total_invoices} invoice line items from {len(all_data)} files")
     
-    # Export to CSV
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = f"remittance_results/remittance_data_{timestamp}.csv"
-    export_all_to_csv(all_data, output_file)
+    # Export to CSV - always use the same filename
+    output_path = export_all_to_csv(all_data, "remittance_results")
     
     print(f"\n=== PROCESSING COMPLETE ===")
-    print(f"Results saved to: {output_file}")
+    print(f"Results saved to: {output_path}")
 
 
 if __name__ == "__main__":
@@ -283,20 +289,16 @@ if __name__ == "__main__":
                 for i, item in enumerate(data['invoice_line_items'], 1):
                     print(f"  {i}. {item['invoice_date']} | {item['invoice_number']} | ${item['net_total']}")
                 
-                # Export to CSV
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                output_file = os.path.join(args.output, f"remittance_data_{timestamp}.csv")
-                export_all_to_csv(all_data, output_file)
-                print(f"\nResults saved to: {output_file}")
+                # Export to CSV - always use the same filename
+                output_path = export_all_to_csv(all_data, args.output)
+                print(f"\nResults saved to: {output_path}")
             else:
                 print("No remittance data found in the specified file.")
         else:
             # Process directory
             all_data = process_all_remittance_files(args.input)
             if all_data:
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                output_file = os.path.join(args.output, f"remittance_data_{timestamp}.csv")
-                export_all_to_csv(all_data, output_file)
-                print(f"\nResults saved to: {output_file}")
+                output_path = export_all_to_csv(all_data, args.output)
+                print(f"\nResults saved to: {output_path}")
             else:
                 print("No remittance files found to process.")
