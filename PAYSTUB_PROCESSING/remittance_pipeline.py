@@ -25,17 +25,17 @@ def extract_check_info(text: str) -> Optional[str]:
     return None
 
 
-def extract_vendor_info(text: str) -> Optional[str]:
-    """Extract vendor information from the text."""
+def extract_vendor_info(text: str) -> tuple[Optional[str], Optional[str]]:
+    """Extract vendor information from the text, returning separate vendor number and name."""
     # Look for pattern: Vendor: 00-0000085 4D Window Specialties, LLC
     vendor_pattern = r'Vendor:\s*(\d{2}-\d{7})\s+(.+?)(?:\n|$)'
     match = re.search(vendor_pattern, text)
     if match:
-        vendor_code, vendor_name = match.groups()
+        vendor_number, vendor_name = match.groups()
         # Clean up vendor name (remove extra whitespace)
         vendor_name = vendor_name.strip()
-        return f"{vendor_code} {vendor_name}"
-    return None
+        return vendor_number, vendor_name
+    return None, None
 
 
 def extract_invoice_line_items(text: str) -> List[Dict[str, str]]:
@@ -86,7 +86,8 @@ def process_remittance_pdf(pdf_path: str) -> Dict:
                     page_data = {
                         'page_number': page_num,
                         'check_info': None,
-                        'vendor_info': None,
+                        'vendor_number': None,
+                        'vendor_name': None,
                         'invoice_line_items': []
                     }
                     
@@ -95,7 +96,9 @@ def process_remittance_pdf(pdf_path: str) -> Dict:
                     page_data['check_info'] = extract_check_info(page_text)
                     
                     print(f"    Extracting vendor information from page {page_num}...")
-                    page_data['vendor_info'] = extract_vendor_info(page_text)
+                    vendor_number, vendor_name = extract_vendor_info(page_text)
+                    page_data['vendor_number'] = vendor_number
+                    page_data['vendor_name'] = vendor_name
                     
                     print(f"    Extracting invoice line items from page {page_num}...")
                     page_data['invoice_line_items'] = extract_invoice_line_items(page_text)
@@ -103,11 +106,11 @@ def process_remittance_pdf(pdf_path: str) -> Dict:
                     print(f"    Page {page_num}: Found {len(page_data['invoice_line_items'])} invoice line items")
                     if page_data['check_info']:
                         print(f"    Page {page_num}: Check info: {page_data['check_info']}")
-                    if page_data['vendor_info']:
-                        print(f"    Page {page_num}: Vendor info: {page_data['vendor_info']}")
+                    if page_data['vendor_number'] and page_data['vendor_name']:
+                        print(f"    Page {page_num}: Vendor: {page_data['vendor_number']} {page_data['vendor_name']}")
                     
                     # Only add page data if we found some relevant information
-                    if page_data['check_info'] or page_data['vendor_info'] or page_data['invoice_line_items']:
+                    if page_data['check_info'] or page_data['vendor_number'] or page_data['invoice_line_items']:
                         extracted_data['pages'].append(page_data)
             
             total_items = sum(len(page_data['invoice_line_items']) for page_data in extracted_data['pages'])
@@ -131,7 +134,7 @@ def export_to_csv(data: Dict, output_dir: str = "remittance_results") -> str:
     total_rows = 0
     with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
         fieldnames = [
-            'page_number', 'check_info', 'vendor_info', 'invoice_date', 
+            'page_number', 'check_info', 'vendor_number', 'vendor_name', 'invoice_date', 
             'invoice_number', 'amount_total', 'discount_total', 'net_total'
         ]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -145,7 +148,8 @@ def export_to_csv(data: Dict, output_dir: str = "remittance_results") -> str:
                 row = {
                     'page_number': page_data['page_number'],
                     'check_info': page_data['check_info'],
-                    'vendor_info': page_data['vendor_info'],
+                    'vendor_number': page_data['vendor_number'],
+                    'vendor_name': page_data['vendor_name'],
                     **line_item
                 }
                 writer.writerow(row)
@@ -204,7 +208,7 @@ def export_all_to_csv(all_data: List[Dict], output_dir: str = "remittance_result
     total_rows = 0
     with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
         fieldnames = [
-            'source_file', 'page_number', 'check_info', 'vendor_info', 'invoice_date', 
+            'source_file', 'page_number', 'check_info', 'vendor_number', 'vendor_name', 'invoice_date', 
             'invoice_number', 'amount_total', 'discount_total', 'net_total'
         ]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -223,7 +227,8 @@ def export_all_to_csv(all_data: List[Dict], output_dir: str = "remittance_result
                         'source_file': file_name,
                         'page_number': page_data['page_number'],
                         'check_info': page_data['check_info'],
-                        'vendor_info': page_data['vendor_info'],
+                        'vendor_number': page_data['vendor_number'],
+                        'vendor_name': page_data['vendor_name'],
                         **line_item
                     }
                     writer.writerow(row)
@@ -262,7 +267,8 @@ def main():
             
             print(f"  Page {page_num}:")
             print(f"    Check Info: {page_data['check_info']}")
-            print(f"    Vendor Info: {page_data['vendor_info']}")
+            print(f"    Vendor Number: {page_data['vendor_number']}")
+            print(f"    Vendor Name: {page_data['vendor_name']}")
             print(f"    Invoice Items: {invoice_count}")
             
             for i, item in enumerate(page_data['invoice_line_items'], 1):
@@ -316,7 +322,8 @@ if __name__ == "__main__":
                     page_num = page_data['page_number']
                     print(f"Page {page_num}:")
                     print(f"  Check Info: {page_data['check_info']}")
-                    print(f"  Vendor Info: {page_data['vendor_info']}")
+                    print(f"  Vendor Number: {page_data['vendor_number']}")
+                    print(f"  Vendor Name: {page_data['vendor_name']}")
                     print(f"  Invoice Items: {len(page_data['invoice_line_items'])}")
                     for i, item in enumerate(page_data['invoice_line_items'], 1):
                         print(f"    {i}. {item['invoice_date']} | {item['invoice_number']} | ${item['net_total']}")
