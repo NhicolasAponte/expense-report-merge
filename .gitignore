@@ -14,3 +14,8 @@ PAYSTUB_PROCESSING/test-keys/
 # Attachment downloads
 ATTACHMENT_EXTRACTION/attachments/
 attachments/
+
+#statement files 
+PAYSTUB_PROCESSING/statement_results/
+PAYSTUB_PROCESSING/remittance_results/
+statement_results/

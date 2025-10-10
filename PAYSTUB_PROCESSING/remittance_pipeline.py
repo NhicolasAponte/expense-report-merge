@@ -70,34 +70,48 @@ def process_remittance_pdf(pdf_path: str) -> Dict:
     print(f"Processing remittance PDF: {pdf_path}")
     
     extracted_data = {
-        'check_info': None,
-        'vendor_info': None,
-        'invoice_line_items': []
+        'pages': []  # Each page will have its own check_info, vendor_info, and invoice_line_items
     }
     
     try:
         with pdfplumber.open(pdf_path) as pdf:
             print(f"  Total pages: {len(pdf.pages)}")
             
-            # Process all pages (though typically remittance advice is single page)
-            all_text = ""
+            # Process each page individually
             for page_num, page in enumerate(pdf.pages, 1):
                 print(f"  Processing page {page_num}...")
                 page_text = page.extract_text(layout=True)
+                
                 if page_text:
-                    all_text += page_text + "\n"
+                    page_data = {
+                        'page_number': page_num,
+                        'check_info': None,
+                        'vendor_info': None,
+                        'invoice_line_items': []
+                    }
+                    
+                    # Extract data from this page only
+                    print(f"    Extracting check information from page {page_num}...")
+                    page_data['check_info'] = extract_check_info(page_text)
+                    
+                    print(f"    Extracting vendor information from page {page_num}...")
+                    page_data['vendor_info'] = extract_vendor_info(page_text)
+                    
+                    print(f"    Extracting invoice line items from page {page_num}...")
+                    page_data['invoice_line_items'] = extract_invoice_line_items(page_text)
+                    
+                    print(f"    Page {page_num}: Found {len(page_data['invoice_line_items'])} invoice line items")
+                    if page_data['check_info']:
+                        print(f"    Page {page_num}: Check info: {page_data['check_info']}")
+                    if page_data['vendor_info']:
+                        print(f"    Page {page_num}: Vendor info: {page_data['vendor_info']}")
+                    
+                    # Only add page data if we found some relevant information
+                    if page_data['check_info'] or page_data['vendor_info'] or page_data['invoice_line_items']:
+                        extracted_data['pages'].append(page_data)
             
-            # Extract data from combined text
-            print("  Extracting check information...")
-            extracted_data['check_info'] = extract_check_info(all_text)
-            
-            print("  Extracting vendor information...")
-            extracted_data['vendor_info'] = extract_vendor_info(all_text)
-            
-            print("  Extracting invoice line items...")
-            extracted_data['invoice_line_items'] = extract_invoice_line_items(all_text)
-            
-            print(f"  Found {len(extracted_data['invoice_line_items'])} invoice line items")
+            total_items = sum(len(page_data['invoice_line_items']) for page_data in extracted_data['pages'])
+            print(f"  Total invoice line items across all pages: {total_items}")
             
     except Exception as e:
         print(f"  ERROR processing PDF: {e}")
@@ -114,9 +128,10 @@ def export_to_csv(data: Dict, output_dir: str = "remittance_results") -> str:
     output_path = os.path.join(output_dir, "remittance_data.csv")
     print(f"Exporting data to CSV: {output_path}")
     
+    total_rows = 0
     with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
         fieldnames = [
-            'check_info', 'vendor_info', 'invoice_date', 
+            'page_number', 'check_info', 'vendor_info', 'invoice_date', 
             'invoice_number', 'amount_total', 'discount_total', 'net_total'
         ]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -124,16 +139,19 @@ def export_to_csv(data: Dict, output_dir: str = "remittance_results") -> str:
         # Write header
         writer.writeheader()
         
-        # Write data rows (one per invoice line item)
-        for line_item in data['invoice_line_items']:
-            row = {
-                'check_info': data['check_info'],
-                'vendor_info': data['vendor_info'],
-                **line_item
-            }
-            writer.writerow(row)
+        # Write data rows (one per invoice line item from each page)
+        for page_data in data['pages']:
+            for line_item in page_data['invoice_line_items']:
+                row = {
+                    'page_number': page_data['page_number'],
+                    'check_info': page_data['check_info'],
+                    'vendor_info': page_data['vendor_info'],
+                    **line_item
+                }
+                writer.writerow(row)
+                total_rows += 1
         
-        print(f"  Exported {len(data['invoice_line_items'])} rows")
+        print(f"  Exported {total_rows} rows")
     
     return output_path
 
@@ -163,7 +181,9 @@ def process_all_remittance_files(input_dir: str = "test-files") -> List[Dict]:
     for pdf_file in remittance_files:
         pdf_path = os.path.join(input_dir, pdf_file)
         data = process_remittance_pdf(pdf_path)
-        if data['invoice_line_items']:  # Only include if we found invoice data
+        # Check if any pages have invoice data
+        has_invoice_data = any(page_data['invoice_line_items'] for page_data in data['pages'])
+        if has_invoice_data:  # Only include if we found invoice data
             all_data.append({
                 'file_name': pdf_file,
                 'data': data
@@ -184,7 +204,7 @@ def export_all_to_csv(all_data: List[Dict], output_dir: str = "remittance_result
     total_rows = 0
     with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
         fieldnames = [
-            'source_file', 'check_info', 'vendor_info', 'invoice_date', 
+            'source_file', 'page_number', 'check_info', 'vendor_info', 'invoice_date', 
             'invoice_number', 'amount_total', 'discount_total', 'net_total'
         ]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -192,20 +212,22 @@ def export_all_to_csv(all_data: List[Dict], output_dir: str = "remittance_result
         # Write header
         writer.writeheader()
         
-        # Write data rows from all files
+        # Write data rows from all files and all pages
         for file_data in all_data:
             file_name = file_data['file_name']
             data = file_data['data']
             
-            for line_item in data['invoice_line_items']:
-                row = {
-                    'source_file': file_name,
-                    'check_info': data['check_info'],
-                    'vendor_info': data['vendor_info'],
-                    **line_item
-                }
-                writer.writerow(row)
-                total_rows += 1
+            for page_data in data['pages']:
+                for line_item in page_data['invoice_line_items']:
+                    row = {
+                        'source_file': file_name,
+                        'page_number': page_data['page_number'],
+                        'check_info': page_data['check_info'],
+                        'vendor_info': page_data['vendor_info'],
+                        **line_item
+                    }
+                    writer.writerow(row)
+                    total_rows += 1
         
         print(f"  Exported {total_rows} total rows from {len(all_data)} files")
     
@@ -230,16 +252,21 @@ def main():
     for file_data in all_data:
         file_name = file_data['file_name']
         data = file_data['data']
-        invoice_count = len(data['invoice_line_items'])
-        total_invoices += invoice_count
         
         print(f"File: {file_name}")
-        print(f"  Check Info: {data['check_info']}")
-        print(f"  Vendor Info: {data['vendor_info']}")
-        print(f"  Invoice Items: {invoice_count}")
         
-        for i, item in enumerate(data['invoice_line_items'], 1):
-            print(f"    {i}. {item['invoice_date']} | {item['invoice_number']} | ${item['net_total']}")
+        for page_data in data['pages']:
+            page_num = page_data['page_number']
+            invoice_count = len(page_data['invoice_line_items'])
+            total_invoices += invoice_count
+            
+            print(f"  Page {page_num}:")
+            print(f"    Check Info: {page_data['check_info']}")
+            print(f"    Vendor Info: {page_data['vendor_info']}")
+            print(f"    Invoice Items: {invoice_count}")
+            
+            for i, item in enumerate(page_data['invoice_line_items'], 1):
+                print(f"      {i}. {item['invoice_date']} | {item['invoice_number']} | ${item['net_total']}")
         print()
     
     print(f"TOTAL: {total_invoices} invoice line items from {len(all_data)} files")
@@ -278,16 +305,21 @@ if __name__ == "__main__":
         if os.path.isfile(args.input):
             # Process single file
             data = process_remittance_pdf(args.input)
-            if data['invoice_line_items']:
+            # Check if any pages have invoice data
+            has_invoice_data = any(page_data['invoice_line_items'] for page_data in data['pages'])
+            if has_invoice_data:
                 all_data = [{'file_name': os.path.basename(args.input), 'data': data}]
                 
                 # Display extracted data
                 print("=== EXTRACTED DATA ===")
-                print(f"Check Info: {data['check_info']}")
-                print(f"Vendor Info: {data['vendor_info']}")
-                print(f"Invoice Items: {len(data['invoice_line_items'])}")
-                for i, item in enumerate(data['invoice_line_items'], 1):
-                    print(f"  {i}. {item['invoice_date']} | {item['invoice_number']} | ${item['net_total']}")
+                for page_data in data['pages']:
+                    page_num = page_data['page_number']
+                    print(f"Page {page_num}:")
+                    print(f"  Check Info: {page_data['check_info']}")
+                    print(f"  Vendor Info: {page_data['vendor_info']}")
+                    print(f"  Invoice Items: {len(page_data['invoice_line_items'])}")
+                    for i, item in enumerate(page_data['invoice_line_items'], 1):
+                        print(f"    {i}. {item['invoice_date']} | {item['invoice_number']} | ${item['net_total']}")
                 
                 # Export to CSV - always use the same filename
                 output_path = export_all_to_csv(all_data, args.output)
