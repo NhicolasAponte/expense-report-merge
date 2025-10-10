@@ -88,6 +88,19 @@ class StatementProcessor:
         
         return pages_text
     
+    def is_new_customer_page(self, text: str) -> bool:
+        """
+        Check if this page starts a new customer statement by looking for the 
+        Manko Window Systems header.
+        
+        Args:
+            text: Page text content
+            
+        Returns:
+            True if this is a new customer page, False otherwise
+        """
+        return "Manko Window Systems - Manhattan Location" in text
+    
     def extract_header_data(self, text: str) -> Optional[StatementHeaderData]:
         """
         Extract statement header data: customer_name, account_number, statement_date.
@@ -313,11 +326,17 @@ class StatementProcessor:
                     if not page_text:
                         continue
                     
-                    # Extract header data if this is the first page
-                    if page_num == 1 and not self.header_data:
-                        # Use standard text extraction for header parsing (it works fine)
-                        standard_text = page.extract_text()
-                        self.header_data = self.extract_header_data(standard_text)
+                    # Check if this is a new customer page
+                    standard_text = page.extract_text()  # Get standard text for header parsing
+                    
+                    if self.is_new_customer_page(standard_text):
+                        # Extract header data for this new customer
+                        new_header_data = self.extract_header_data(standard_text)
+                        if new_header_data:
+                            self.header_data = new_header_data
+                            print(f"Page {page_num}: New customer detected - {self.header_data.customer_name} | {self.header_data.account_number}")
+                        else:
+                            print(f"Page {page_num}: Failed to extract header data for new customer page")
                     
                     # Skip if header_data is not available
                     if not self.header_data:
@@ -811,10 +830,10 @@ class StatementProcessor:
             positional_items = self.extract_with_positional_parsing(self.input_pdf_path)
             
             if positional_items:
-                print(f"✅ Positional parsing successful: {len(positional_items)} items extracted")
+                print(f"[SUCCESS] Positional parsing successful: {len(positional_items)} items extracted")
                 self.invoice_items = positional_items
             else:
-                print("⚠️ Positional parsing failed, falling back to text-based parsing...")
+                print("[WARNING] Positional parsing failed, falling back to text-based parsing...")
                 
                 # Fallback to original text-based approach
                 # Step 1: Extract text using pdfplumber
@@ -823,36 +842,41 @@ class StatementProcessor:
                     print("No text extracted from PDF")
                     return False
                 
-                # Step 2: Extract header data from first page
-                first_page_text = pages_text[0][1]
-                self.header_data = self.extract_header_data(first_page_text)
+                # Step 2: Process each page and extract header data when new customer detected
+                for page_num, page_text in pages_text:
+                    if self.is_new_customer_page(page_text):
+                        # Extract header data for this new customer
+                        new_header_data = self.extract_header_data(page_text)
+                        if new_header_data:
+                            self.header_data = new_header_data
+                            print(f"Page {page_num}: New customer detected - {self.header_data.customer_name} | {self.header_data.account_number}")
+                    
+                    if self.header_data:
+                        # Extract invoice items from this page
+                        page_items = self.extract_invoice_items(page_text, self.header_data)
+                        self.invoice_items.extend(page_items)
                 
                 if not self.header_data:
-                    print("Failed to extract header data")
+                    print("Failed to extract any header data from document")
                     return False
-                
-                # Step 3: Extract invoice items from all pages using text parsing
-                for page_num, text in pages_text:
-                    page_items = self.extract_invoice_items(text, self.header_data)
-                    self.invoice_items.extend(page_items)
             
-            # Step 4: Generate CSV output
+            # Step 3: Generate CSV output
             output_dir = setup_output_directory("statement_results")
             generated_files = self.generate_csv_output(output_dir)
             
             if generated_files:
-                print(f"\n✅ Processing completed successfully!")
+                print(f"\n[SUCCESS] Processing completed successfully!")
                 print(f"📄 Header data extracted: {self.header_data.customer_name if self.header_data else 'N/A'}")
                 print(f"📋 Invoice items extracted: {len(self.invoice_items)}")
                 for file_type, file_path in generated_files.items():
                     print(f"💾 CSV saved ({file_type}): {file_path}")
                 return True
             else:
-                print("❌ Failed to generate CSV output")
+                print("[ERROR] Failed to generate CSV output")
                 return False
                 
         except Exception as e:
-            print(f"❌ Error processing statement: {e}")
+            print(f"[ERROR] Error processing statement: {e}")
             return False
 
 def process_single_statement(pdf_path: str) -> bool:
@@ -891,8 +915,8 @@ def process_all_statements(statements_dir: str) -> None:
     print(f"\n{'='*60}")
     print(f"PROCESSING SUMMARY")
     print(f"{'='*60}")
-    print(f"✅ Successful: {successful}")
-    print(f"❌ Failed: {failed}")
+    print(f"[SUCCESS] Successful: {successful}")
+    print(f"[ERROR] Failed: {failed}")
     print(f"📁 Total files: {len(pdf_files)}")
 
 def main():
