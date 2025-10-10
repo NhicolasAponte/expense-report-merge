@@ -90,8 +90,11 @@ class StatementProcessor:
     
     def is_new_customer_page(self, text: str) -> bool:
         """
-        Check if this page starts a new customer statement by looking for the 
-        Manko Window Systems header.
+        Check if this page starts a new customer statement by looking for multiple indicators:
+        1. Location headers (Manko Window Systems - [Location] or Interstate Glass)
+        2. Page 1 indicator 
+        3. Statement Date presence
+        4. Account # presence
         
         Args:
             text: Page text content
@@ -99,7 +102,24 @@ class StatementProcessor:
         Returns:
             True if this is a new customer page, False otherwise
         """
-        return "Manko Window Systems - Manhattan Location" in text
+        # Check for location headers
+        has_location_header = any([
+            "Manko Window Systems - Manhattan Location" in text,
+            "Manko Window Systems - Aurora Location" in text, 
+            "Manko Window Systems - Des Moines Location" in text,
+            "Interstate Glass" in text
+        ])
+        
+        # Check for Page 1 (indicating start of customer statement)
+        import re
+        has_page_one = bool(re.search(r'Page\s+1\b', text))
+        
+        # Check for required elements
+        has_statement_date = "StatementDate" in text or "Statement Date" in text
+        has_account = "Account #" in text
+        
+        # A new customer page should have all these elements
+        return has_location_header and has_page_one and has_statement_date and has_account
     
     def extract_header_data(self, text: str) -> Optional[StatementHeaderData]:
         """
