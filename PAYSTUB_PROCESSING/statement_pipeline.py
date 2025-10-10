@@ -508,11 +508,18 @@ class StatementProcessor:
         if not clean_text:
             return "", ""
         
+        # Strategy 0: Special handling for "none" keyword
+        # If text starts with "none", treat "none" as the complete PO value
+        words = clean_text.split()
+        if words and words[0].lower() == "none":
+            purchase_order = words[0]  # Keep original case
+            job_name = " ".join(words[1:]) if len(words) > 1 else ""
+            return purchase_order, job_name
+        
         # Strategy 1: Look for natural word boundaries around the job_start position
         relative_job_start = job_start - po_start
         
         # Check if there's a clear word break near the job_start boundary
-        words = clean_text.split()
         
         if len(words) <= 1:
             # Single word or empty - determine which field it belongs to
@@ -755,10 +762,15 @@ class StatementProcessor:
     
     def generate_csv_output(self, output_dir: str) -> Dict[str, str]:
         """
-        Generate separate CSV files based on invoice number suffixes.
-        - statement_data.csv: Regular invoices (no special suffix)
-        - cm_statement.csv: Credit memo transactions (-CM)
-        - pp_statement.csv: Payment transactions (-PP)
+        Generate separate CSV files based on account number prefixes and invoice number suffixes.
+        Files are organized by:
+        1. Account number prefix (e.g., '00-', '22-')
+        2. Invoice type suffix (-CM for credit memo, -PP for payment, default for regular)
+        
+        Examples:
+        - 00_statement_data.csv: Regular invoices for accounts starting with '00-'
+        - 00_cm_statement.csv: Credit memos for accounts starting with '00-'
+        - 22_pp_statement.csv: Payments for accounts starting with '22-'
         
         Args:
             output_dir: Directory to save the CSV files
@@ -770,41 +782,53 @@ class StatementProcessor:
             print("No invoice items to export")
             return {}
         
-        # Separate items by invoice number suffix
-        regular_items = []  # Default invoices (no special suffix)
-        cm_items = []       # Credit memo transactions (-CM)
-        pp_items = []       # Payment transactions (-PP)
+        # Group items by account prefix and invoice type
+        from collections import defaultdict
+        grouped_items = defaultdict(lambda: defaultdict(list))
         
         for item in self.invoice_items:
-            if item.invoice_number.endswith('-CM'):
-                cm_items.append(item)
-            elif item.invoice_number.endswith('-PP'):
-                pp_items.append(item)
+            # Extract account prefix (everything before the first '-')
+            if '-' in item.account_number:
+                account_prefix = item.account_number.split('-')[0]
             else:
-                regular_items.append(item)
+                account_prefix = 'no_prefix'
+            
+            # Determine invoice type
+            if item.invoice_number.endswith('-CM'):
+                invoice_type = 'cm'
+            elif item.invoice_number.endswith('-PP'):
+                invoice_type = 'pp'
+            else:
+                invoice_type = 'regular'
+            
+            grouped_items[account_prefix][invoice_type].append(item)
         
         generated_files = {}
         
-        # Generate statement_data.csv for regular invoices
-        if regular_items:
-            regular_csv_path = os.path.join(output_dir, "statement_data.csv")
-            self._write_csv_file(regular_csv_path, regular_items)
-            generated_files['statement_data'] = regular_csv_path
-            print(f"Generated statement_data.csv: {len(regular_items)} regular invoice items")
-        
-        # Generate cm_statement.csv for credit memo transactions
-        if cm_items:
-            cm_csv_path = os.path.join(output_dir, "cm_statement.csv")
-            self._write_csv_file(cm_csv_path, cm_items)
-            generated_files['cm_statement'] = cm_csv_path
-            print(f"Generated cm_statement.csv: {len(cm_items)} credit memo items")
-        
-        # Generate pp_statement.csv for payment transactions
-        if pp_items:
-            pp_csv_path = os.path.join(output_dir, "pp_statement.csv")
-            self._write_csv_file(pp_csv_path, pp_items)
-            generated_files['pp_statement'] = pp_csv_path
-            print(f"Generated pp_statement.csv: {len(pp_items)} payment items")
+        # Generate CSV files for each account prefix and invoice type combination
+        for account_prefix in sorted(grouped_items.keys()):
+            prefix_data = grouped_items[account_prefix]
+            
+            # Generate regular invoices file
+            if 'regular' in prefix_data and prefix_data['regular']:
+                regular_csv_path = os.path.join(output_dir, f"{account_prefix}_statement_data.csv")
+                self._write_csv_file(regular_csv_path, prefix_data['regular'])
+                generated_files[f'{account_prefix}_statement_data'] = regular_csv_path
+                print(f"Generated {account_prefix}_statement_data.csv: {len(prefix_data['regular'])} regular invoice items")
+            
+            # Generate credit memo file
+            if 'cm' in prefix_data and prefix_data['cm']:
+                cm_csv_path = os.path.join(output_dir, f"{account_prefix}_cm_statement.csv")
+                self._write_csv_file(cm_csv_path, prefix_data['cm'])
+                generated_files[f'{account_prefix}_cm_statement'] = cm_csv_path
+                print(f"Generated {account_prefix}_cm_statement.csv: {len(prefix_data['cm'])} credit memo items")
+            
+            # Generate payment file
+            if 'pp' in prefix_data and prefix_data['pp']:
+                pp_csv_path = os.path.join(output_dir, f"{account_prefix}_pp_statement.csv")
+                self._write_csv_file(pp_csv_path, prefix_data['pp'])
+                generated_files[f'{account_prefix}_pp_statement'] = pp_csv_path
+                print(f"Generated {account_prefix}_pp_statement.csv: {len(prefix_data['pp'])} payment items")
         
         return generated_files
     
