@@ -50,7 +50,8 @@ def extract_invoice_line_items(text: str) -> List[Dict[str, str]]:
     for line in lines:
         # Look for date pattern at start of line followed by invoice data
         # Updated pattern to handle hyphens and other characters in invoice numbers
-        invoice_pattern = r'(\d{1,2}/\d{1,2}/\d{4})\s+([^\s]+)\s+.*?(\d{1,3}(?:,\d{3})*\.\d{2})\s+(\d{1,3}(?:,\d{3})*\.\d{2})\s+(\d{1,3}(?:,\d{3})*\.\d{2})'
+        # Updated to handle trailing negative signs in amounts (e.g., "3,396.87-")
+        invoice_pattern = r'(\d{1,2}/\d{1,2}/\d{4})\s+([^\s]+)\s+.*?(\d{1,3}(?:,\d{3})*\.\d{2}-?)\s+(\d{1,3}(?:,\d{3})*\.\d{2}-?)\s+(\d{1,3}(?:,\d{3})*\.\d{2}-?)'
         match = re.search(invoice_pattern, line)
         
         if match:
