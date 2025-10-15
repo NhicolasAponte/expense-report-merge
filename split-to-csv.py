@@ -3,11 +3,12 @@ import re
 import csv
 from datetime import datetime
 from PyPDF2 import PdfReader, PdfWriter
-from config import LOCAL_DESKTOP_TEMP
+from config import READY_FOR_INVOICING, LOCAL_OCR_RESULTS, CSV_OUTPUT
 
 # --- Hard-coded global variables for input and output directories ---
-INPUT_DIR = LOCAL_DESKTOP_TEMP
-OUTPUT_DIR = os.path.join(INPUT_DIR, "ready-for-invoicing")
+INPUT_DIR = LOCAL_OCR_RESULTS
+OUTPUT_DIR = READY_FOR_INVOICING
+CSV_OUTPUT = CSV_OUTPUT
 INVOICE_LIST = []
 NOT_FOUND = "NOT_FOUND"
 TIMESTAMP = datetime.now().strftime("%m%d_%H%M")
@@ -114,12 +115,12 @@ def get_csv_filename(filename=None):
 
 def write_csv_to_ready_for_invoicing(data, filename=None):
     # Get the path to the user's Desktop/ready-for-invoicing
-    desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
-    target_dir = os.path.join(desktop_path, "ready-for-invoicing")
-    os.makedirs(target_dir, exist_ok=True)  # Create the directory if it doesn't exist
+    # desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+    # target_dir = os.path.join(desktop_path, "ready-for-invoicing")
+    os.makedirs(CSV_OUTPUT, exist_ok=True)  # Create the directory if it doesn't exist
     if filename is None:
         filename = get_csv_filename(FILENAME)
-    output_path = os.path.join(target_dir, filename)
+    output_path = os.path.join(CSV_OUTPUT, filename)
     with open(output_path, "w", newline='') as csvfile:
         writer = csv.writer(csvfile)
         # Write header row
