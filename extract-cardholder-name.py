@@ -1,9 +1,11 @@
+# this script extracts the cardholder name from the pdf and renames the file with the extracted name 
 import os
 import re
 from PyPDF2 import PdfReader
+from config import UMB_INPUT_DIR, UMB_OUTPUT_DIR, UMB_PROCESSED_DIR
 
 # --- Global Variables ---
-INPUT_DIR = r"C:\Users\nflores\Desktop\temp\umb"  # Hard-coded directory path
+INPUT_DIR = UMB_INPUT_DIR  # Hard-coded directory path
 CARDHOLDER_PATTERNS = [
     r'Cardholder Name:\s*([A-Za-z\s]+)',
 ]

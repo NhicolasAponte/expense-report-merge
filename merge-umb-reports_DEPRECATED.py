@@ -1,3 +1,4 @@
+# DEPRECATED 
 # use this script to process, merge, and move UMB reports to the AP Input Folder 
 from pathlib import Path
 import os

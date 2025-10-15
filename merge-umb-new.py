@@ -1,3 +1,4 @@
+# current working script for merging reports 
 # use this script to process, merge, and move UMB reports to the AP Input Folder 
 from pathlib import Path
 import os
@@ -203,8 +204,8 @@ def process_pdfs():
         print(f"Processed and merged reports for {name}.")
 
 def main():
-    # process_pdfs()
-    move_to_ap_input_folder()
+    process_pdfs()
+    # move_to_ap_input_folder()
 
 if __name__ == "__main__":
     main() 
