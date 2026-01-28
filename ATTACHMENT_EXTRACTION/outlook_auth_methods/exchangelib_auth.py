@@ -84,16 +84,16 @@ ACCOUNT_CONFIGS = {
         'password': WORK_APP_PASSWORD,
         'name': 'Primary Work Account'
     },
-    2: {
-        'email': WORK_EMAIL_ADDRESS_2, 
-        'password': WORK_APP_PASSWORD_2,
-        'name': 'Secondary Work Account'
-    },
-    3: {
-        'email': WORK_EMAIL_ADDRESS_3, 
-        'password': WORK_APP_PASSWORD_3,
-        'name': 'Third Work Account'
-    },
+    # 2: {
+    #     'email': WORK_EMAIL_ADDRESS_2, 
+    #     'password': WORK_APP_PASSWORD_2,
+    #     'name': 'Secondary Work Account'
+    # },
+    # 3: {
+    #     'email': WORK_EMAIL_ADDRESS_3, 
+    #     'password': WORK_APP_PASSWORD_3,
+    #     'name': 'Third Work Account'
+    # },
     # Add more accounts here as needed...
 }
 

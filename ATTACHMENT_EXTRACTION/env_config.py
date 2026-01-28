@@ -17,10 +17,10 @@ EMAIL_ADDRESS = os.getenv('EMAIL_ADDRESS')
 OUTLOOK_PASSWORD = os.getenv('OUTLOOK_PASSWORD')
 OUTLOOK_APP_PASSWORD = os.getenv('OUTLOOK_APP_PASSWORD')
 
-# Personal Azure app credentials
-CLIENT_ID = os.getenv('CLIENT_ID')
-TENANT_ID = os.getenv('TENANT_ID')
-CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+# Personal Azure app credentials (fallback for personal use)
+CLIENT_ID = os.getenv('WORK_CLIENT_ID') or os.getenv('CLIENT_ID')
+TENANT_ID = os.getenv('WORK_TENANT_ID') or os.getenv('TENANT_ID')
+CLIENT_SECRET = os.getenv('WORK_CLIENT_SECRET') or os.getenv('CLIENT_SECRET')
 
 # Work email credentials
 WORK_EMAIL_ADDRESS = os.getenv('WORK_EMAIL_ADDRESS')
