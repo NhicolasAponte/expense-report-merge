@@ -22,7 +22,7 @@ output_folder = Path(UMB_OUTPUT_DIR)
 processed_folder = Path(UMB_PROCESSED_DIR) 
 
 
-ap_input_folder = Path("//mws-doclink/SmartCapture/Input Folders/AP Invoice CREDIT CARD")
+ap_input_folder = Path("W:/AP Invoice CREDIT CARD")
 output_folder.mkdir(exist_ok=True)
 processed_folder.mkdir(exist_ok=True)
 
@@ -204,8 +204,8 @@ def process_pdfs():
         print(f"Processed and merged reports for {name}.")
 
 def main():
-    process_pdfs()
-    # move_to_ap_input_folder()
+    process_pdfs()  
+    # move_to_ap_input_folder() # need a status in filename to know when they are ready to be moved 
 
 if __name__ == "__main__":
     main() 
