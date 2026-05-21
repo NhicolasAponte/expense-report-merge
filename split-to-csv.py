@@ -4,7 +4,6 @@ import csv
 from datetime import datetime
 from PyPDF2 import PdfReader, PdfWriter
 from config import READY_FOR_INVOICING, LOCAL_OCR_RESULTS, CSV_OUTPUT
-
 # --- Hard-coded global variables for input and output directories ---
 INPUT_DIR = LOCAL_OCR_RESULTS
 OUTPUT_DIR = READY_FOR_INVOICING
@@ -27,6 +26,8 @@ def get_timestamped_subdir(base_dir, filename=None):
     subdir_path = os.path.join(base_dir, subdir_name)
     os.makedirs(subdir_path, exist_ok=True)
     return subdir_path
+
+# def process_first_page_for_invoice_number(page_text):
 
 def get_invoice_number_from_page(page_text):
     invoice_number = NOT_FOUND
