@@ -10,6 +10,7 @@ OUTPUT_DIR = READY_FOR_INVOICING
 CSV_OUTPUT = CSV_OUTPUT
 INVOICE_LIST = []
 NOT_FOUND = "NOT_FOUND"
+INVOICE_NUMBER_THRESHOLD = 600000
 TIMESTAMP = datetime.now().strftime("%m%d_%H%M")
 FILENAME = ""
 
@@ -48,8 +49,10 @@ def get_invoice_number_from_page(page_text):
         for pattern in patterns:
             match = re.search(pattern, normalized_line, re.IGNORECASE)
             if match:
-                invoice_number = match.group(1).strip()
-                break
+                candidate = match.group(1).strip()
+                if int(candidate) > INVOICE_NUMBER_THRESHOLD:
+                    invoice_number = candidate
+                    break
         if invoice_number != NOT_FOUND:
             break
 
