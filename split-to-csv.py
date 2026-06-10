@@ -10,7 +10,7 @@ OUTPUT_DIR = READY_FOR_INVOICING
 CSV_OUTPUT = CSV_OUTPUT
 INVOICE_LIST = []
 NOT_FOUND = "NOT_FOUND"
-INVOICE_NUMBER_THRESHOLD = 600000
+INVOICE_NUMBER_THRESHOLD = 700000
 TIMESTAMP = datetime.now().strftime("%m%d_%H%M")
 FILENAME = ""
 
@@ -36,7 +36,7 @@ def get_invoice_number_from_page(page_text):
         r'#\s*[mM](\d{6})',
         r'm(\d{6})',
         r'Work Order Number:\s*(\d{6})',
-        r'Invoice #\s*(\d{6})',
+        r'Invoice #\s*:\s*(\d{6})',
         r'Invoice ID:\s*(\d{6})',
         # r'#\s*(\d{6})',
     ]
