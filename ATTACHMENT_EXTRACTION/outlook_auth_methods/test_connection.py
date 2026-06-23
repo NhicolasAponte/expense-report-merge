@@ -1,3 +1,4 @@
+# let's modify this script. I have the credentials for my work account. this script should try to authenticate with exchangelib and output detailed logs. the goal is to be able to determine whether Basic Auth is disable for this account 
 #!/usr/bin/env python3
 """
 Simple test script to check Exchange connection
